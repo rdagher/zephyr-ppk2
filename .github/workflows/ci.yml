@@ -1,0 +1,97 @@
+# Python lint + a per-board/per-sample firmware build matrix. The NCS
+# toolchain env is installed once by prepare-ncs and frozen in the
+# Actions cache — same pattern (and same NCS_VERSION) as ppk2-lib's CI,
+# so CI builds with the toolchain the bench validated.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NCS_VERSION: v3.3.1
+
+jobs:
+  python:
+    name: ruff + smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx ruff check scripts
+      - run: |
+          python3 scripts/attribute.py --help >/dev/null
+          python3 scripts/check_budget.py --help >/dev/null
+
+  # Seed the NCS cache once so the build matrix never stampedes a
+  # cold key with parallel multi-GB installs.
+  prepare-ncs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Cache toolchain env
+        id: cache
+        uses: actions/cache@v4
+        with:
+          lookup-only: true
+          path: |
+            ~/ncs
+            ~/.nrfutil
+            ~/.local/bin/nrfutil
+          key: ncs-${{ env.NCS_VERSION }}-toolchain
+
+      - name: Install nrfutil + NCS (cache miss only)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/nrfutil" \
+            https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
+          chmod +x "$HOME/.local/bin/nrfutil"
+          export PATH="$HOME/.local/bin:$PATH"
+          nrfutil install sdk-manager
+          nrfutil sdk-manager install "$NCS_VERSION"
+          rm -rf "$HOME/ncs/downloads" "$HOME/ncs/tmp"
+
+  build:
+    name: ${{ matrix.sample }} (${{ matrix.board }})
+    needs: prepare-ncs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - nrf52840dk/nrf52840
+          - nrf54lm20dk/nrf54lm20b/cpuapp
+        sample: [profiling, profiling_cpp, wrap_profiling]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore-only: the env was frozen by prepare-ncs. A miss means
+      # the save failed or the key was evicted mid-run — re-run.
+      - name: Restore toolchain env
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/ncs
+            ~/.nrfutil
+            ~/.local/bin/nrfutil
+          key: ncs-${{ env.NCS_VERSION }}-toolchain
+          fail-on-cache-miss: true
+
+      - name: Build
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          cd "$HOME/ncs/$NCS_VERSION"
+          nrfutil sdk-manager toolchain launch --ncs-version "$NCS_VERSION" -- \
+            west build --board "${{ matrix.board }}" --pristine=always \
+              --build-dir "$GITHUB_WORKSPACE/build" \
+              "$GITHUB_WORKSPACE/samples/${{ matrix.sample }}" \
+              -- -DZEPHYR_EXTRA_MODULES="$GITHUB_WORKSPACE"

@@ -1,0 +1,4 @@
+name: zephyr-ppk2
+build:
+  cmake: .
+  kconfig: Kconfig

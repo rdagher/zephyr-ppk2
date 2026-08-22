@@ -1,0 +1,6 @@
+west-commands:
+  - file: scripts/west_commands/ppk2_cmd.py
+    commands:
+      - name: ppk2
+        class: Ppk2
+        help: PPK2 power profiling (list / capture / run / attribute)

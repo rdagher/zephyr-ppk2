@@ -1,0 +1,10 @@
+sample:
+  name: PPK2 wrap profiling
+  description: Bracket code you don't own via linker wrapping
+tests:
+  sample.ppk2.wrap_profiling:
+    platform_allow:
+      - nrf52840dk/nrf52840
+      - nrf54lm20dk/nrf54lm20b/cpuapp
+    tags: ppk2 power
+    build_only: true

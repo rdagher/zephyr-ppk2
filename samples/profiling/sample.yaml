@@ -1,0 +1,10 @@
+sample:
+  name: PPK2 phase profiling (C)
+  description: Low-power application cycle with per-phase PPK2 trace markers
+tests:
+  sample.ppk2.profiling:
+    platform_allow:
+      - nrf52840dk/nrf52840
+      - nrf54lm20dk/nrf54lm20b/cpuapp
+    tags: ppk2 power
+    build_only: true
