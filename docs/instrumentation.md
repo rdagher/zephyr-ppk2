@@ -5,7 +5,8 @@
 A bracket drives a claimed logic channel high on entry and low on
 exit — context-manager / RAII semantics with a GPIO as the scope. The
 PPK2 samples every channel alongside the current, so each bracket
-becomes a region the host can price: energy, width, mean current.
+becomes a region the host can price: energy, width, mean and peak
+current — and, on request, the raw sample vector for custom reducers.
 
 A bracket costs one GPIO write per edge. With `CONFIG_PPK2_TRACE=n`
 every form below compiles to nothing — instrumented code builds

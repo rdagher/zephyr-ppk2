@@ -27,13 +27,20 @@ shortens.
 
 Reference numbers (nRF54LM20DK, ammeter 3.3 V, bench-measured 2026-08):
 
-| Region | n | energy | width | mean current |
-|---|---|---|---|---|
-| cycle (D0) | 10 | 1855 ± 9 µJ | 820.7 ms | 685 µA |
-| wakeup (D1) | 11 | 100 ± 7 µJ | 20.0 ms | 1509 µA |
-| measure (D2) | 11 | 805 ± 5 µJ | 200.3 ms | 1218 µA |
-| transmit (D3) | 11 | 941 ± 0.4 µJ | 200.3 ms | 1423 µA |
-| deep idle | | | | median 4.16 µA |
+| Region | n | energy | width | mean current | peak¹ |
+|---|---|---|---|---|---|
+| cycle (D0) | 10 | 1855 ± 9 µJ | 820.7 ms | 685 µA | 176 mA |
+| wakeup (D1) | 11 | 100 ± 7 µJ | 20.0 ms | 1509 µA | 18.8 mA |
+| measure (D2) | 11 | 805 ± 5 µJ | 200.3 ms | 1218 µA | 126 mA |
+| transmit (D3) | 11 | 941 ± 0.4 µJ | 200.3 ms | 1423 µA | 2.0 mA |
+| deep idle | | | | median 4.16 µA | |
+
+¹ Raw single-sample maxima include wake-up inrush and the PPK2's
+auto-range transients: measure's 126 mA spike is the `k_sleep` wake-up
+landing inside the bracket, while transmit — no sleep inside — peaks
+at a clean 2.0 mA. Budget raw peaks with generous headroom
+(`--workload-max-peak-ua`), or keep the per-region sample vector
+(`collect_pulses(..., keep_samples=True)`) and write a robust reducer.
 
 Cross-validated against a Nordic GUI golden capture of the same bench —
 aligned mean Δ +0.27 %, KS 0.0175, per-phase energy within 0.15 % —
