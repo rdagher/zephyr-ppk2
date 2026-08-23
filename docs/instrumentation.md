@@ -1,9 +1,16 @@
 # Instrumenting your code
 
 A bracket drives a claimed logic channel high on entry and low on
-exit — context-manager / RAII semantics with a GPIO as the scope. The
-forms below differ only in where the bracket lives: a linker wrapper,
-the function body, a block, or an explicit begin/end pair.
+exit — context-manager / RAII semantics with a GPIO as the scope.
+
+Instrumentation splits in two families. **Link-time**: the tracing
+module routes calls through wrappers at symbol resolution — the
+monitored code is untouched, but only cross-TU calls to C-linkage
+symbols are reachable. **In-source**: the bracket is written into the
+code — function-top annotation, block scopes, begin/end pairs, C++
+RAII — universal reach at the price of touching the source. Both emit
+the same GPIO write pair; the samples measure them within noise of
+each other.
 
 ## Claims
 
