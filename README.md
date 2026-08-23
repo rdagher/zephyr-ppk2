@@ -2,17 +2,19 @@
 
 Zephyr module for per-region power profiling with Nordic's Power
 Profiler Kit II (PPK2) — the firmware half of a harness whose host
-half is [ppk2-lib](https://github.com/rdagher/ppk2-lib). Code regions
-are bracketed on the PPK2's logic channels; the PPK2 samples them with
-every current sample (100 kSPS), and the host attributes energy,
-width, and current per region at 10 µs granularity.
+half is [ppk2-lib](https://github.com/rdagher/ppk2-lib). A bracket
+drives one of the PPK2's logic inputs high on entry and low on exit —
+the context-manager / RAII idea, with a GPIO as the scope. The PPK2
+records the pin alongside every current sample (100 kSPS), so the host
+can attribute energy, width, and mean current to each bracketed region
+at 10 µs granularity.
 
 ```c
-PPK2_TRACE_CLAIM(0, cycle);              /* D0 on the PPK2 logic port */
+PPK2_TRACE_CLAIM(0, cycle);              /* own channel D0, name it "cycle" */
 
 void run_cycle(void)
 {
-    PPK2_TRACE_FUNCTION(ppk2_ch_cycle);  /* D0 high for this function */
+    PPK2_TRACE_FUNCTION(ppk2_ch_cycle);  /* D0 high on entry, low on any exit */
 
     wakeup();                            /* D1 — bracketed the same way */
     transmit(measure());                 /* D2, D3 */
@@ -20,7 +22,8 @@ void run_cycle(void)
 }
 ```
 
-One capture later — channel names read back from the ELF:
+One capture later — the report labels come from the firmware's
+claims, read out of `zephyr.elf`:
 
 ![west ppk2 capture, then attribution with names from the ELF](docs/demo.png)
 
@@ -29,9 +32,9 @@ One capture later — channel names read back from the ELF:
 - **Per-region reports** — energy (µJ), width (ms), mean current (µA)
   per marked region, plus the idle floor. A marker costs a single
   GPIO write.
-- **Names declared once** — each claimed channel registers
-  `{channel, name}` in the image's ROM; the host reads them from the
-  ELF.
+- **Named regions** — `PPK2_TRACE_CLAIM(0, cycle)` stores the name in
+  a ROM section of the image; `west ppk2 attribute` reads it from
+  `zephyr.elf` and labels the report — no name flags to keep in sync.
 - **`west ppk2 …`** — list, capture, power, run, attribute, from the
   west workspace.
 - **CI gate** — energy/width/idle budgets as exit codes; power and
@@ -97,8 +100,8 @@ west ppk2 attribute trace.csv --vdd 3.3          # names come from the ELF
 
 `list`/`capture`/`run`/`power` pass through to ppk2-lib's CLI.
 `attribute` finds `zephyr.elf` under `--build-dir` (default `build`),
-reads the claimed channel names from the registry, and prints the
-per-region report. Flash recipes and per-board bench setups:
+reads the region names the claims embedded in the image, and prints
+the labelled per-region report. Flash recipes and per-board bench setups:
 [docs/bench.md](docs/bench.md).
 
 ## Instrumenting your code

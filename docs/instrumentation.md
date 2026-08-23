@@ -1,5 +1,10 @@
 # Instrumenting your code
 
+A bracket drives a claimed logic channel high on entry and low on
+exit — context-manager / RAII semantics with a GPIO as the scope. The
+forms below differ only in where the bracket lives: a linker wrapper,
+the function body, a block, or an explicit begin/end pair.
+
 ## Claims
 
 Channels are **claimed**: each component owns its marker, a second
