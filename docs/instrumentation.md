@@ -144,9 +144,40 @@ marker drop (see the header doc).
 
 ### C++
 
-An early-exit-safe RAII guard and a decorator (`ppk2_trace.hpp`):
+C++ names mangle, so link-time wrapping is out — the two styles map to
+a RAII guard and a decorator instead (`ppk2_trace.hpp`).
+
+The guard brackets the enclosing scope and drops on any exit path:
 
 ```cpp
-ppk2::TraceScope mark{ppk2_ch_sensor};             // drops on scope exit
-constexpr auto sample_traced = ppk2::traced<ppk2_ch_sensor>(sample);
+PPK2_TRACE_CLAIM(3, inference);
+
+int infer(const Frame &frame)
+{
+    ppk2::TraceScope mark{ppk2_ch_inference};  // high on entry
+
+    if (!frame.valid()) {
+        return -EINVAL;    // marker drops on the early return
+    }
+    return run_model(frame);   // ...and on the normal one
+}
 ```
+
+The decorator is the C++ analogue of the tracing module: wrap once,
+call the wrapped object — the function itself stays untouched:
+
+```cpp
+int transmit(int reading);   // untouched
+
+constexpr auto transmit_traced = ppk2::traced<ppk2_ch_tx>(transmit);
+
+void run_cycle(int reading)
+{
+    transmit_traced(reading);  // bracketed call
+    transmit(reading);         // direct call — bypasses the bracket
+}
+```
+
+Unlike `--wrap`'s silent same-TU bypass, the decorator's bypass is
+visible at the call site: the name says which path you took. For
+one-off closures there is also `ppk2::trace_scope(ch, callable)`.
