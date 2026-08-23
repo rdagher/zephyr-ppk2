@@ -1,13 +1,51 @@
 # zephyr-ppk2
 
 Zephyr module for per-region power profiling with Nordic's Power
-Profiler Kit II (PPK2) — the firmware half of a harness whose host
-half is [ppk2-lib](https://github.com/rdagher/ppk2-lib). A bracket
-drives one of the PPK2's logic inputs high on entry and low on exit —
-the context-manager / RAII idea, with a GPIO as the scope. The PPK2
-records the pin alongside every current sample (100 kSPS), so the host
-can attribute energy, width, and mean current to each bracketed region
-at 10 µs granularity.
+Profiler Kit II (PPK2): which code costs what — energy, width, and
+mean current per function, phase, or block — and a CI gate that fails
+the build when a change regresses power or timing. It is the firmware
+half of a harness whose host half is
+[ppk2-lib](https://github.com/rdagher/ppk2-lib).
+
+## The approach
+
+A bracket drives one of the PPK2's eight logic inputs high on entry
+and low on exit — the context-manager / RAII idea, with a GPIO as the
+scope. The PPK2 records all logic pins alongside every current sample
+(100 kSPS); the host slices the current trace wherever a pin was high
+and integrates. The result: energy (µJ), width (ms), and mean current
+(µA) per bracketed region, plus the idle floor, at 10 µs granularity —
+for the cost of one GPIO write per bracket edge. With
+`CONFIG_PPK2_TRACE=n` every bracket compiles to nothing; instrumented
+code builds unchanged.
+
+## Inside Zephyr
+
+The module leans on the linker to keep instrumentation out of the
+application's way:
+
+- **Claimed channels** — `PPK2_TRACE_CLAIM(0, cycle)` makes one
+  component own channel D0: a second claim of the same channel in
+  another file is a duplicate-symbol link error (same file: compile
+  error), and claiming a channel the overlay doesn't wire fails at
+  compile time.
+- **Names live in the image** — the claim also stores
+  `{channel, "cycle"}` in a ROM section; `west ppk2 attribute` reads
+  it from `zephyr.elf` and labels the report — no name flags to keep
+  in sync with the firmware.
+- **The tracing module** — function monitoring via linker wrapping:
+  one `trace.c` declares the monitored surface and
+  `ppk2_trace_wrap(<fns>)` in CMake routes the calls (`-Wl,--wrap`) —
+  the monitored code is untouched, yours or a vendor stack's. For what
+  wrap can't reach there are in-source forms: function-top annotation,
+  block scopes, begin/end pairs for split regions, C++ RAII and a
+  decorator. All forms and their constraints:
+  [docs/instrumentation.md](docs/instrumentation.md).
+- **West workflow** — `west ppk2 list / capture / power / run /
+  attribute`, added to the workspace by the manifest's
+  `west-commands` line.
+
+## The demo
 
 ```c
 PPK2_TRACE_CLAIM(0, cycle);              /* own channel D0, name it "cycle" */
@@ -29,22 +67,17 @@ claims, read out of `zephyr.elf`:
 
 ([the same session as a GIF](docs/demo.gif))
 
-- **Per-region reports** — energy (µJ), width (ms), mean current (µA)
-  per marked region, plus the idle floor. A marker costs a single
-  GPIO write.
-- **Named regions** — `PPK2_TRACE_CLAIM(0, cycle)` stores the name in
-  a ROM section of the image; `west ppk2 attribute` reads it from
-  `zephyr.elf` and labels the report — no name flags to keep in sync.
-- **`west ppk2 …`** — list, capture, power, run, attribute, from the
-  west workspace.
-- **CI gate** — energy/width/idle budgets as exit codes; power and
-  timing regressions fail the build.
-- **Zero cost when off** — `CONFIG_PPK2_TRACE=n` compiles every marker
-  to nothing; instrumented code builds unchanged.
+Three sibling samples run this cycle, one per instrumentation style:
+`profiling` (annotations), `wrap_profiling` (tracing module —
+file-for-file the same app, zero code touched), `profiling_cpp`
+(RAII). Bench-measured on the nRF54LM20DK: cycle 1855 ± 9 µJ, deep
+idle median 4.16 µA, cross-validated against a Nordic GUI golden
+capture to +0.27 % — reference tables, evidence, and run instructions
+in [docs/samples.md](docs/samples.md).
 
 ## Pick your path
 
-- **Profile your application** — add the module to your workspace
+- **Profile your application** — add the module
   ([Setup](#setup)), instrument
   ([docs/instrumentation.md](docs/instrumentation.md)), capture and
   attribute ([Everyday use](#everyday-use)).
@@ -95,45 +128,14 @@ In your `west.yml` — the `west-commands` line is what adds
 west ppk2 list                                   # PPK2s + per-port status
 west ppk2 capture --vdd 3.3 --out trace.csv --seconds 30
 west ppk2 run --vdd 3.3 -- west flash            # power the DUT for a command
-west ppk2 attribute trace.csv --vdd 3.3          # names come from the ELF
+west ppk2 attribute trace.csv --vdd 3.3          # labels from the image
 ```
 
 `list`/`capture`/`run`/`power` pass through to ppk2-lib's CLI.
 `attribute` finds `zephyr.elf` under `--build-dir` (default `build`),
 reads the region names the claims embedded in the image, and prints
-the labelled per-region report. Flash recipes and per-board bench setups:
-[docs/bench.md](docs/bench.md).
-
-## Instrumenting your code
-
-The canonical form is a **tracing module** — one file declares the
-monitored surface, the linker routes the calls, the monitored code is
-untouched (yours or a vendor stack's):
-
-```c
-/* src/trace.c — the app's entire monitored surface */
-PPK2_TRACE_WRAP(0, int, radio_send, (int payload_len), (payload_len));
-```
-
-```cmake
-ppk2_trace_wrap(radio_send)
-```
-
-Wrap works on cross-TU calls to C-linkage symbols; for what it can't
-reach there are function-top annotations, block scopes, begin/end
-pairs for split regions, and C++ RAII/decorator forms — the full
-picture with constraints is in
-[docs/instrumentation.md](docs/instrumentation.md).
-
-## The samples
-
-Three siblings run the same low-power application cycle, one per
-instrumentation style: `profiling` (annotations), `wrap_profiling`
-(tracing module — file-for-file the same app, zero code touched),
-`profiling_cpp` (RAII). Bench-measured on the nRF54LM20DK: cycle
-1855 ± 9 µJ, deep idle median 4.16 µA, cross-validated against a
-Nordic GUI golden capture to +0.27 % — reference tables, evidence, and
-run instructions in [docs/samples.md](docs/samples.md).
+the labelled per-region report. Flash recipes and per-board bench
+setups: [docs/bench.md](docs/bench.md).
 
 ## CI: fail the build on a power regression
 
