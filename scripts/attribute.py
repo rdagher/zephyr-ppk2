@@ -32,6 +32,8 @@ class Pulse:
     start_s: float
     duration_s: float
     charge_uc: float  # integral of current over the pulse, in µC
+    peak_ua: float = 0.0  # highest sample inside the pulse
+    samples: "list[float] | None" = None  # per-sample µA, kept on request
 
     def energy_uj(self, vdd_v: float) -> float:
         """Energy over the pulse in µJ (charge x VDD)."""
@@ -56,29 +58,47 @@ def load_rows(path: Path) -> list[tuple[float, float, int]]:
     return rows
 
 
-def collect_pulses(rows: list[tuple[float, float, int]], pin: int) -> list[Pulse]:
+def collect_pulses(
+    rows: list[tuple[float, float, int]], pin: int, keep_samples: bool = False
+) -> list[Pulse]:
     """Walk the samples once, closing a Pulse at each falling edge of `pin`.
 
     A pulse only opens on a real rising edge — a pin already high at
     the first sample is ignored (its start is unknown), just like a
-    pulse still high at the last sample (its end is unknown).
+    pulse still high at the last sample (its end is unknown). With
+    ``keep_samples`` each Pulse carries its raw µA vector, for custom
+    reducers beyond the built-in energy/width/current/peak.
     """
     pulses: list[Pulse] = []
     high = False
     seen_low = False
     start_s = 0.0
     charge_uc = 0.0
+    peak_ua = 0.0
+    samples: list[float] = []
     for t_ms, ua, levels in rows:
         level = (levels >> pin) & 1
         if level and not high and seen_low:
-            high, start_s, charge_uc = True, t_ms / 1000.0, 0.0
+            high, start_s, charge_uc, peak_ua = True, t_ms / 1000.0, 0.0, 0.0
+            samples = []
         if high and level:
             charge_uc += ua * SAMPLE_PERIOD_S
+            peak_ua = max(peak_ua, ua)
+            if keep_samples:
+                samples.append(ua)
         if not level:
             seen_low = True
             if high:
                 high = False
-                pulses.append(Pulse(start_s, t_ms / 1000.0 - start_s, charge_uc))
+                pulses.append(
+                    Pulse(
+                        start_s,
+                        t_ms / 1000.0 - start_s,
+                        charge_uc,
+                        peak_ua,
+                        samples if keep_samples else None,
+                    )
+                )
     return pulses
 
 
@@ -94,17 +114,19 @@ def first_region_start_ms(rows: list[tuple[float, float, int]]) -> float:
 
 
 def stats_line(name: str, pulses: list[Pulse], vdd_v: float) -> str:
-    """One report row: count, energy mean ± std, mean width, mean current."""
+    """One report row: count, energy mean ± std, mean width, avg and peak current."""
     energies = [p.energy_uj(vdd_v) for p in pulses]
     durations = [p.duration_s * 1000.0 for p in pulses]
     currents = [p.mean_current_ua() for p in pulses]
+    peak = max(p.peak_ua for p in pulses)
     mean_e = statistics.fmean(energies)
     sd_e = statistics.stdev(energies) if len(energies) > 1 else 0.0
     return (
         f"{name:<22} n={len(pulses):<4} "
-        f"energy {mean_e:9.2f} ± {sd_e:6.2f} µJ   "
-        f"width {statistics.fmean(durations):8.2f} ms   "
-        f"current {statistics.fmean(currents):8.2f} µA"
+        f"energy {mean_e:9.2f} ± {sd_e:6.2f} µJ  "
+        f"width {statistics.fmean(durations):8.2f} ms  "
+        f"avg {statistics.fmean(currents):8.2f} µA  "
+        f"peak {peak:7.0f} µA"
     )
 
 

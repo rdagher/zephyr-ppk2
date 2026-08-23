@@ -36,6 +36,8 @@ def main() -> int:
     )
     ap.add_argument("--workload-max-uj", type=float, help="max mean workload energy in µJ")
     ap.add_argument("--workload-max-ms", type=float, help="max mean workload width in ms")
+    ap.add_argument("--workload-max-ua", type=float, help="max mean workload current in µA")
+    ap.add_argument("--workload-max-peak-ua", type=float, help="max peak workload current in µA")
     ap.add_argument("--idle-max-ua", type=float, help="max median idle current in µA")
     ap.add_argument(
         "--power-on-ua",
@@ -45,7 +47,14 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    if args.workload_max_uj is None and args.workload_max_ms is None and args.idle_max_ua is None:
+    budgets = (
+        args.workload_max_uj,
+        args.workload_max_ms,
+        args.workload_max_ua,
+        args.workload_max_peak_ua,
+        args.idle_max_ua,
+    )
+    if all(b is None for b in budgets):
         ap.error("at least one budget option is required")
 
     rows = load_rows(Path(args.csv_path))
@@ -86,6 +95,30 @@ def main() -> int:
             print(
                 f"{'PASS' if ok else 'FAIL'} workload width "
                 f"{mean_ms:.1f} ms (budget {args.workload_max_ms:.1f} ms, n={len(workloads)})"
+            )
+            failed |= not ok
+    if args.workload_max_ua is not None:
+        if not workloads:
+            print("FAIL no workloads on the channel — cannot check current budget")
+            failed = True
+        else:
+            mean_ua = statistics.fmean(p.mean_current_ua() for p in workloads)
+            ok = mean_ua <= args.workload_max_ua
+            print(
+                f"{'PASS' if ok else 'FAIL'} workload current "
+                f"{mean_ua:.1f} µA (budget {args.workload_max_ua:.1f} µA, n={len(workloads)})"
+            )
+            failed |= not ok
+    if args.workload_max_peak_ua is not None:
+        if not workloads:
+            print("FAIL no workloads on the channel — cannot check peak budget")
+            failed = True
+        else:
+            peak_ua = max(p.peak_ua for p in workloads)
+            ok = peak_ua <= args.workload_max_peak_ua
+            print(
+                f"{'PASS' if ok else 'FAIL'} workload peak "
+                f"{peak_ua:.1f} µA (budget {args.workload_max_peak_ua:.1f} µA, n={len(workloads)})"
             )
             failed |= not ok
     if args.idle_max_ua is not None:

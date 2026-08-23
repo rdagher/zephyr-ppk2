@@ -13,9 +13,9 @@ A bracket drives one of the PPK2's eight logic inputs high on entry
 and low on exit — the context-manager / RAII idea, with a GPIO as the
 scope. The PPK2 records all logic pins alongside every current sample
 (100 kSPS); the host slices the current trace wherever a pin was high
-and integrates. The result: energy (µJ), width (ms), and mean current
-(µA) per bracketed region, plus the idle floor, at 10 µs granularity —
-for the cost of one GPIO write per bracket edge. With
+and integrates. The result: energy (µJ), width (ms), mean and peak
+current (µA) per bracketed region, plus the idle floor, at 10 µs
+granularity — for the cost of one GPIO write per bracket edge. With
 `CONFIG_PPK2_TRACE=n` every bracket compiles to nothing; instrumented
 code builds unchanged.
 
@@ -140,8 +140,8 @@ setups: [docs/bench.md](docs/bench.md).
 ## CI: fail the build on a power regression
 
 `scripts/check_budget.py` turns attribution into a gate — exit 1 when a
-region blows its energy, width, or idle-current budget, so power *and*
-timing regressions both fail the build. On a self-hosted runner wired
+region blows its energy, width, current (mean or peak), or idle-floor
+budget — power *and* timing regressions both fail the build. On a self-hosted runner wired
 to the bench, the loop is the same commands you run at the desk:
 
 ```yaml
