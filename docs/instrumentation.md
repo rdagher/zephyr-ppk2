@@ -51,18 +51,55 @@ Constraints:
 
 ## Annotation: when wrap can't reach
 
-For `static`, inlined, or same-TU callees, annotate at function top;
-the calling code still reads as untraced code:
+The linker only interposes calls it resolves. Three common cases never
+reach it:
+
+- **`static` functions** never become linker symbols — there is
+  nothing for `--wrap` to attach to:
+
+  ```c
+  /* sensor.c */
+  static int adc_read_raw(void)   /* internal helper: no symbol */
+  ```
+
+- **Same-TU calls** are resolved before the linker runs, even for
+  global functions. `--wrap=process` links green here and the wrapper
+  never fires:
+
+  ```c
+  /* app.c */
+  int process(int raw) { ... }        /* global, but... */
+
+  void poll(void)
+  {
+      int v = process(adc_read());    /* ...bypasses __wrap_process */
+  }
+  ```
+
+- **Inlined calls** disappear entirely — header functions,
+  `static inline`, or LTO paste the body at the call site.
+
+For all three, put the bracket inside the function instead — one line
+at the top, dropped on every exit path, callers untouched:
 
 ```c
-static void sample(void)
-{
-    PPK2_TRACE_FUNCTION(ppk2_ch_sensor); /* drops on any return */
+/* sensor.c */
+PPK2_TRACE_CLAIM(2, adc);
 
-    read_sensor();
-    crunch();
+static int adc_read_raw(void)
+{
+    PPK2_TRACE_FUNCTION(ppk2_ch_adc);  /* high on entry */
+
+    int raw = read_hw();
+    if (raw < 0) {
+        return -EIO;                   /* marker still drops here */
+    }
+    return raw;                        /* ...and here */
 }
 ```
+
+`samples/profiling` instruments its whole cycle this way — diff it
+against `samples/wrap_profiling` for the side-by-side.
 
 ## Fine-grained: blocks and split regions
 
