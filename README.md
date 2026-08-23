@@ -86,7 +86,7 @@ west ppk2 run --vdd 3.3 -- west flash            # power the DUT for a command
 west ppk2 attribute trace.csv --vdd 3.3          # names come from the ELF
 ```
 
-`list`/`capture`/`run` pass through to ppk2-lib's CLI.
+`list`/`capture`/`run`/`power` pass through to ppk2-lib's CLI.
 `attribute` finds `zephyr.elf` under `--build-dir` (default `build`),
 reads the claimed channel names from the registry, and prints the
 per-region report — nothing to keep in sync with the firmware.
@@ -104,7 +104,7 @@ rail is up. Two equivalent recipes:
 
 ```sh
 # A: hold the rail from a second shell for as long as you need
-ppk2 power on --vdd 3.3 --hold              # Ctrl-C releases
+west ppk2 power on --vdd 3.3 --hold         # Ctrl-C releases
 west flash                                  # from another shell
 
 # B: one-shot — power the DUT just for the flash

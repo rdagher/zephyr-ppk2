@@ -1,6 +1,6 @@
 """West extension: drive the PPK2 harness from the west workflow.
 
-``list``/``capture``/``run`` pass through to ppk2-lib's CLI.
+``list``/``capture``/``run``/``power`` pass through to ppk2-lib's CLI.
 ``attribute`` reads the claimed channel names from the built ELF's
 registry (the iterable section PPK2_TRACE_CLAIM fills), so the
 ``--name`` flags are derived from the firmware instead of retyped.
@@ -15,16 +15,16 @@ from shutil import which
 from west.commands import WestCommand
 
 _MODULE_ROOT = Path(__file__).resolve().parents[2]
-_PASSTHROUGH = ("list", "capture", "run")
+_PASSTHROUGH = ("list", "capture", "run", "power")
 
 
 class Ppk2(WestCommand):
     def __init__(self):
         super().__init__(
             "ppk2",
-            "PPK2 power profiling (list / capture / run / attribute)",
+            "PPK2 power profiling (list / capture / run / power / attribute)",
             "Capture, power, and attribute with the PPK2 harness.\n"
-            "list/capture/run pass their arguments to ppk2-lib's CLI;\n"
+            "list/capture/run/power pass their arguments to ppk2-lib's CLI;\n"
             "attribute names the channels from the built ELF's registry.",
             accepts_unknown_args=True,
         )
