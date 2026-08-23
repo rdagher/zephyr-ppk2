@@ -1,34 +1,47 @@
 # Instrumenting your code
 
+## What instrumentation is here
+
 A bracket drives a claimed logic channel high on entry and low on
-exit — context-manager / RAII semantics with a GPIO as the scope.
+exit — context-manager / RAII semantics with a GPIO as the scope. The
+PPK2 samples every channel alongside the current, so each bracket
+becomes a region the host can price: energy, width, mean current.
 
-Instrumentation splits in two families. **Link-time**: the tracing
-module routes calls through wrappers at symbol resolution — the
-monitored code is untouched, but only cross-TU calls to C-linkage
-symbols are reachable. **In-source**: the bracket is written into the
-code — function-top annotation, block scopes, begin/end pairs, C++
-RAII — universal reach at the price of touching the source. Both emit
-the same GPIO write pair; the samples measure them within noise of
-each other.
+A bracket costs one GPIO write per edge. With `CONFIG_PPK2_TRACE=n`
+every form below compiles to nothing — instrumented code builds
+unchanged.
 
-## Claims
+## Claims: owning a channel
 
-Channels are **claimed**: each component owns its marker, a second
-claim of the same channel in another file is a link error (same file:
-compile error), and claiming an unwired channel fails at compile time.
-The claim also registers `{channel, name}` in the image's ROM — that
-registry is where `west ppk2 attribute` reads the channel names.
+Both families start with a claim. Channels are **claimed**: each
+component owns its marker, a second claim of the same channel in
+another file is a link error (same file: compile error), and claiming
+an unwired channel fails at compile time. The claim also registers
+`{channel, name}` in the image's ROM — that registry is where
+`west ppk2 attribute` reads the report labels.
 
 ```c
 PPK2_TRACE_CLAIM(2, sensor);   /* defines ppk2_ch_sensor, registers "sensor" */
 ```
 
-## Function monitoring: the tracing module
+## Two ways to instrument
 
-The canonical way to monitor functions is a **tracing module**: one
-file declares the monitored surface, and the linker routes every call
-through a bracketing wrapper — the monitored code is untouched:
+- **Link-time** — the tracing module: calls are routed through
+  bracketing wrappers at symbol resolution. The monitored code is
+  untouched; only cross-TU calls to C-linkage symbols are reachable.
+- **In-source** — the bracket is written into the code: function-top
+  annotation, block scopes, begin/end pairs, C++ RAII. Universal
+  reach, at the price of touching the source.
+
+They are complements: link-time for the standing monitored surface,
+in-source for what wrap can't reach and for fine-grained work. Both
+emit the same GPIO write pair — the sibling samples measure them
+within noise of each other.
+
+## Link-time: the tracing module
+
+One file declares the monitored surface, and the linker routes every
+call through a bracketing wrapper:
 
 ```c
 /* src/trace.c — the app's entire monitored surface */
@@ -49,14 +62,16 @@ declaration in your trace module).
 Constraints:
 
 - Wrapping intercepts **cross-TU calls to external symbols** — which
-  means C-linkage functions; C++ names mangle, so for C++ code the
-  RAII guard and decorator below are the canonical forms instead.
+  means C-linkage functions; C++ names mangle, so C++ code uses the
+  in-source forms instead.
 - Same-TU calls bypass the wrapper **silently** (the build stays
   green, the marker never fires) — structure the monitored surface to
   be called across files. `samples/wrap_profiling` splits `cycle.c`
   and `phases.c` for exactly this reason.
 
-## Annotation: when wrap can't reach
+## In-source: brackets in the code
+
+### Function annotation
 
 The linker only interposes calls it resolves. Three common cases never
 reach it:
@@ -108,7 +123,7 @@ static int adc_read_raw(void)
 `samples/profiling` instruments its whole cycle this way — diff it
 against `samples/wrap_profiling` for the side-by-side.
 
-## Fine-grained: blocks and split regions
+### Blocks and split regions
 
 For a specific block in a debug session, or a region that begins in
 one function and ends in a callback (tic/toc style, balancing is on
@@ -127,7 +142,7 @@ ppk2_trace_end(ppk2_ch_tx);         /* ...in the completion callback */
 `PPK2_TRACE_SCOPE_BREAK`; `return`/`goto`/plain `break` skip the
 marker drop (see the header doc).
 
-## C++
+### C++
 
 An early-exit-safe RAII guard and a decorator (`ppk2_trace.hpp`):
 
@@ -135,8 +150,3 @@ An early-exit-safe RAII guard and a decorator (`ppk2_trace.hpp`):
 ppk2::TraceScope mark{ppk2_ch_sensor};             // drops on scope exit
 constexpr auto sample_traced = ppk2::traced<ppk2_ch_sensor>(sample);
 ```
-
-## Cost
-
-A marker is a single GPIO write. With `CONFIG_PPK2_TRACE=n` every form
-compiles to nothing — instrumented code builds unchanged.
