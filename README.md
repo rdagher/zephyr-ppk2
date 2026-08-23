@@ -21,9 +21,15 @@ code builds unchanged.
 
 ## Inside Zephyr
 
-The module leans on the linker to keep instrumentation out of the
-application's way:
+Four mechanisms carry the approach into a Zephyr project:
 
+- **Two ways to bracket** — *link-time*: a tracing module (`trace.c`)
+  declares the monitored surface and `ppk2_trace_wrap(<fns>)` in
+  CMake routes the calls (`-Wl,--wrap`) — the monitored code is
+  untouched, yours or a vendor stack's. *In-source*: function-top
+  annotation, block scopes, begin/end pairs, C++ RAII and a decorator
+  — for what wrap can't reach and for fine-grained work. All forms
+  and their constraints: [docs/instrumentation.md](docs/instrumentation.md).
 - **Claimed channels** — `PPK2_TRACE_CLAIM(0, cycle)` makes one
   component own channel D0: a second claim of the same channel in
   another file is a duplicate-symbol link error (same file: compile
@@ -33,19 +39,13 @@ application's way:
   `{channel, "cycle"}` in a ROM section; `west ppk2 attribute` reads
   it from `zephyr.elf` and labels the report — no name flags to keep
   in sync with the firmware.
-- **The tracing module** — function monitoring via linker wrapping:
-  one `trace.c` declares the monitored surface and
-  `ppk2_trace_wrap(<fns>)` in CMake routes the calls (`-Wl,--wrap`) —
-  the monitored code is untouched, yours or a vendor stack's. For what
-  wrap can't reach there are in-source forms: function-top annotation,
-  block scopes, begin/end pairs for split regions, C++ RAII and a
-  decorator. All forms and their constraints:
-  [docs/instrumentation.md](docs/instrumentation.md).
 - **West workflow** — `west ppk2 list / capture / power / run /
   attribute`, added to the workspace by the manifest's
   `west-commands` line.
 
 ## The demo
+
+The in-source form, from `samples/profiling`:
 
 ```c
 PPK2_TRACE_CLAIM(0, cycle);              /* own channel D0, name it "cycle" */
