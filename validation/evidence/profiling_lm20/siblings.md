@@ -2,7 +2,7 @@
 
 Back-to-back 30 s captures on the same bench (nRF54LM20DK, ammeter
 3.3 V) of the three sibling samples — same app, three instrumentation
-styles. All firmwares carry the ack tripwire: `transmit(measure())`
+styles. Both C firmwares carry the ack tripwire: `transmit(measure())`
 must return 43 through the instrumentation or the cycle visibly
 shortens by 400 ms.
 
@@ -20,7 +20,7 @@ Findings:
   the annotation sibling — inside run-to-run noise — and the idle
   floors are identical. The wrapper's cost (one extra call frame per
   region) is invisible at µJ scale.
-- **Tripwire passed in all three**: 820 ms cycles mean the ack value
+- **Tripwire passed in both C siblings**: 820 ms cycles mean the ack value
   `43` survived the instrumentation path — including two returning
   wrappers in `wrap_profiling`.
 - ¹ ² The C++ twin skips transmit every 8th cycle (early return): one
@@ -29,6 +29,6 @@ Findings:
   cycle's RAII pulse (~1 µs) is shorter than the 10 µs sample period
   and leaves no D3 trace — sub-sample markers can escape the PPK2.
 
-Captures not committed for this round (the GUI-parity round above
-carries the raw data); regenerate with the commands in the sample
-README.
+Captures not committed for this round (the [GUI-parity round](README.md)
+carries the raw data); regenerate with the quickstart in
+[docs/samples.md](../../../docs/samples.md).

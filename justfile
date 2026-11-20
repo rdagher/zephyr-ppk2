@@ -2,7 +2,7 @@
 #
 # Toolchain: the nrfutil-managed NCS install at /opt/nordic/ncs
 # (NCS_VERSION picks the version; NCS_WORKSPACE overrides the path).
-# Host capture/attribution stays with ppk2-lib's CLI — see README.
+# Host side: capture with ppk2-lib's CLI, attribute with scripts/ — see README.
 
 NCS_VERSION   := env_var_or_default("NCS_VERSION", "v3.3.1")
 NCS_WORKSPACE := env_var_or_default("NCS_WORKSPACE", "/opt/nordic/ncs/" + NCS_VERSION)

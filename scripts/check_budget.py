@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Fail (exit 1) when a capture exceeds its energy budgets.
+"""Fail (exit 1) when a capture exceeds its energy, width, current or idle budgets.
 
 CI gate on top of attribute.py's region logic:
 
-    python check_budget.py trace.csv --vdd 3.0 --channel 1 \\
-        --workload-max-uj 3500 --workload-max-ms 850 --idle-max-ua 50
+    python check_budget.py trace.csv --vdd 3.3 --channel 0 \\
+        --workload-max-uj 2300 --workload-max-ms 1025 --idle-max-ua 5.2
 """
 
 import argparse

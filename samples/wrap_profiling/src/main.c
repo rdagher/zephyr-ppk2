@@ -1,7 +1,8 @@
 /*
  * Wrap-profiling sample: the same cycle as samples/profiling,
- * instrumented without touching the app. main.c, cycle.c, and phases.c
- * contain no tracing code — the monitored surface is declared once in
+ * instrumented without touching the app. cycle.c and phases.c contain
+ * no tracing code, and main.c only the boot sync burst — the monitored
+ * surface is declared once in
  * trace.c and the linker routes every call through its bracketing
  * wrapper (CMakeLists.txt).
  *

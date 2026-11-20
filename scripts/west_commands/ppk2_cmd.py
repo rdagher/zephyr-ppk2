@@ -35,7 +35,7 @@ class Ppk2(WestCommand):
             help=self.help,
             description=self.description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
-            usage="west ppk2 {list,capture,run,attribute} [args...]",
+            usage="west ppk2 {list,capture,run,power,attribute} [args...]",
         )
         parser.add_argument("sub", choices=(*_PASSTHROUGH, "attribute"))
         parser.add_argument("args", nargs=argparse.REMAINDER)

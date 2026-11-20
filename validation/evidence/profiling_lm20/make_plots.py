@@ -15,9 +15,10 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-HERE = Path(__file__).parent
-sys.path.insert(0, str(HERE.parents[2] / "scripts"))
+sys.path.insert(0, str(Path(__file__).parents[3] / "scripts"))
 from attribute import POWER_ON_UA, SYNC_PULSE_MAX_S, collect_pulses, load_rows
+
+HERE = Path(__file__).parent
 
 CAPTURES = [
     ("CLI", HERE / "captures/profiling_lm20_cli.csv.gz", "tab:blue"),

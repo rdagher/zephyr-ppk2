@@ -16,8 +16,8 @@
  *
  * The PPK2 samples all logic pins with every current sample (100 kSPS),
  * so a marker held high brackets a code region for time, current, and
- * energy attribution with 10 µs granularity. A marker costs a single
- * GPIO write. With CONFIG_PPK2_TRACE=n the markers compile to nothing —
+ * energy attribution with 10 µs granularity. A marker costs one GPIO
+ * write per edge. With CONFIG_PPK2_TRACE=n the markers compile to nothing —
  * instrumented code builds unchanged.
  *
  * With CONFIG_PPK2_TRACE_AUTO_INIT (default y) the wired channels are

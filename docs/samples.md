@@ -17,10 +17,14 @@ west ppk2 attribute trace.csv --vdd 3.3
 `attribute` reads the channel names from the built ELF — no `--name`
 flags to keep in sync with the firmware.
 
+Every sample opens with three 1 ms pulses on D0: a sync burst that
+marks boot in the trace. The report lists pulses shorter than 5 ms as
+a burst, not as regions.
+
 ## `samples/profiling` — annotation
 
 Phases are annotated inside their functions (`PPK2_TRACE_FUNCTION` in
-`cycle.c` and `phases.c`) — `run_cycle()` and `main()` are identical
+`cycle.c` and `phases.c`) — the call sites and `main()` are identical
 to the untraced version. The dataflow carries a tripwire:
 `transmit(measure())` must return the right ack or the cycle visibly
 shortens.
@@ -42,15 +46,17 @@ at a clean 2.0 mA. Budget raw peaks with generous headroom
 (`--workload-max-peak-ua`), or keep the per-region sample vector
 (`collect_pulses(..., keep_samples=True)`) and write a robust reducer.
 
-Cross-validated against a Nordic GUI golden capture of the same bench —
-aligned mean Δ +0.27 %, KS 0.0175, per-phase energy within 0.15 % —
-committed under
+Cross-validated against a Nordic GUI golden capture of the same bench.
+Over nine marker-aligned cycles: mean Δ +0.27 %, KS 0.0175. Cycle,
+measure and transmit energy agree within 0.12 %; the 20 ms wakeup
+phase differs by 3.6 %, inside its cycle-to-cycle spread. Committed
+under
 [`validation/evidence/profiling_lm20/`](../validation/evidence/profiling_lm20/).
 
 ## `samples/wrap_profiling` — the tracing module
 
 File-for-file the same app, instrumented without touching it: the
-monitored surface is `src/trace.c` (four `PPK2_TRACE_WRAP` lines) plus
+monitored surface is `src/trace.c` (four wrap declarations) plus
 `ppk2_trace_wrap(run_cycle wakeup measure transmit)` in CMake. Diff
 the two samples to compare the approaches. Bench-measured within
 0.35 % of the annotation sibling on every phase, identical idle floor

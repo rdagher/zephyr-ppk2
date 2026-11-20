@@ -3,7 +3,7 @@
 zephyr_include_directories(include)
 
 # Route each listed function through its PPK2_TRACE_WRAP wrapper.
-# No-op with CONFIG_PPK2_TRACE=n (the stub wrappers pass through).
+# No-op with CONFIG_PPK2_TRACE=n: nothing is wrapped.
 function(ppk2_trace_wrap)
   if(CONFIG_PPK2_TRACE)
     foreach(fn ${ARGV})

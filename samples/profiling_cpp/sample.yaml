@@ -1,6 +1,6 @@
 sample:
   name: PPK2 phase profiling (C++)
-  description: Same cycle as the C sample, with RAII guards and closures
+  description: Same cycle as the C sample, with RAII guards
 tests:
   sample.ppk2.profiling_cpp:
     platform_allow:

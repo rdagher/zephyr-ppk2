@@ -3,14 +3,14 @@
 
 Reads a GUI-parity CSV (from ``ppk2 capture`` or a Nordic GUI export)
 and reports, per marker channel D0..D7: region count, energy
-(mean ± std µJ), width (ms), and mean current (µA). Energy per region
-is the charge integral times VDD — each row is one 10 µs sample.
+(mean ± std µJ), width (ms), mean and peak current (µA). Energy per
+region is the charge integral times VDD — each row is one 10 µs sample.
 
 Pulses shorter than 5 ms count as sync bursts, not regions. Samples
 with no marker high are the idle floor. Stdlib only.
 
 Usage:
-    python attribute.py trace.csv --vdd 3.0 --name 1=cycle --name 2=wakeup
+    python attribute.py trace.csv --vdd 3.3 --name 0=cycle --name 1=wakeup
 """
 
 import argparse

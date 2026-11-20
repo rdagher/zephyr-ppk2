@@ -45,7 +45,7 @@ Four mechanisms carry the approach into a Zephyr project:
 
 ## The demo
 
-The in-source form, from `samples/profiling`:
+The in-source form, abridged from `samples/profiling`:
 
 ```c
 PPK2_TRACE_CLAIM(0, cycle);              /* own channel D0, name it "cycle" */
@@ -72,8 +72,8 @@ Three sibling samples run this cycle, one per instrumentation style:
 file-for-file the same app, zero code touched), `profiling_cpp`
 (RAII). Bench-measured on the nRF54LM20DK: cycle 1855 ± 9 µJ, deep
 idle median 4.16 µA, cross-validated against a Nordic GUI golden
-capture to +0.27 % — reference tables, evidence, and run instructions
-in [docs/samples.md](docs/samples.md).
+capture to +0.27 % over nine marker-aligned cycles — reference tables,
+evidence, and run instructions in [docs/samples.md](docs/samples.md).
 
 ## Pick your path
 
