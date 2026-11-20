@@ -39,9 +39,11 @@ def main() -> None:
     with opener(args.src, "rt", newline="") as f, open(args.dst, "w") as g:
         g.write(f.readline())
         for line in f:
-            t = float(line.split(",", 1)[0])
+            stamp, rest = line.split(",", 1)
+            t = float(stamp)
             if t0 <= t < t1:
-                g.write(line)
+                # Timestamps restart at 0: the window reads as its own capture.
+                g.write(f"{f'{t - t0:.2f}'.rstrip('0').rstrip('.') or '0'},{rest}")
     print(f"{args.dst}: {args.cycles} cycles, {t1 - t0:.1f} ms")
 
 

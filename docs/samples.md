@@ -49,7 +49,7 @@ at a clean 2.0 mA. Budget raw peaks with generous headroom
 Cross-validated against a Nordic GUI golden capture of the same bench.
 Over nine marker-aligned cycles: mean Δ +0.27 %, KS 0.0175. Cycle,
 measure and transmit energy agree within 0.12 %; the 20 ms wakeup
-phase differs by 3.6 %, inside its cycle-to-cycle spread. Committed
+phase differs by 3.7 %, inside its cycle-to-cycle spread. Committed
 under
 [`validation/evidence/profiling_lm20/`](../validation/evidence/profiling_lm20/).
 

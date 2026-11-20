@@ -1,7 +1,7 @@
 # Cross-validation — CLI 9 cycles vs GUI 9 cycles
 
-- **CLI 9 cycles:** `/Users/roudy.dagher/dev/perso/ppk2-lib-blog/zephyr-ppk2/ref_9c.csv` — 2,538,670 rows, 26.56 s
-- **GUI 9 cycles:** `/Users/roudy.dagher/dev/perso/ppk2-lib-blog/zephyr-ppk2/gui_9c.csv` — 2,538,231 rows, 26.82 s
+- **CLI 9 cycles:** `cli_9c.csv` — 2,538,670 rows, 25.39 s
+- **GUI 9 cycles:** `gui_9c.csv` — 2,538,231 rows, 25.38 s
 
 ## Schema
 
@@ -11,8 +11,8 @@ Headers byte-identical: **True**
 
 | Capture | Rate (Hz) | Δ vs nominal |
 |---|---:|---:|
-| CLI 9 cycles | 95,572.6 | -4.4274 kHz |
-| GUI 9 cycles | 94,652.2 | -5.3478 kHz |
+| CLI 9 cycles | 100,000.0 | +0.0000 kHz |
+| GUI 9 cycles | 100,000.0 | +0.0000 kHz |
 
 ## Current statistics
 
@@ -34,10 +34,10 @@ Two-sample KS on 100 k subsampled rows from each capture:
 
 | Pin | CLI 9 cycles duty (%) | GUI 9 cycles duty (%) | CLI 9 cycles edges/s | GUI 9 cycles edges/s |
 |---|---:|---:|---:|---:|
-| D0 | 29.0940 | 29.0819 |  0.301 |  0.298 |
-| D1 |  0.7099 |  0.7093 |  0.301 |  0.298 |
-| D2 |  7.1011 |  7.0951 |  0.339 |  0.336 |
-| D3 |  7.1001 |  7.0919 |  0.339 |  0.336 |
+| D0 | 29.0940 | 29.0819 |  0.315 |  0.315 |
+| D1 |  0.7099 |  0.7093 |  0.315 |  0.315 |
+| D2 |  7.1011 |  7.0951 |  0.355 |  0.355 |
+| D3 |  7.1001 |  7.0919 |  0.355 |  0.355 |
 | D4 |  0.0000 |  0.0000 |  0.000 |  0.000 |
 | D5 |  0.0000 |  0.0000 |  0.000 |  0.000 |
 | D6 |  0.0000 |  0.0000 |  0.000 |  0.000 |

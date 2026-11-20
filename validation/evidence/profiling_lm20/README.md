@@ -12,12 +12,12 @@ harness reports in [`reports/`](reports/), regenerable plot in
 
 `scripts/attribute.py`, `--vdd 3.3`, names from the sample:
 
-| Region | CLI | GUI | Δ energy |
+| Region | CLI | GUI | Δ energy, CLI vs GUI |
 |---|---|---|---|
-| cycle (D0) | 1854.77 ± 8.81 µJ, 820.66 ms, 684.88 µA | 1856.47 ± 11.28 µJ, 820.18 ms, 685.91 µA | +0.09 % |
-| wakeup (D1) | 99.71 ± 6.95 µJ, 20.02 ms, 1509.05 µA | 96.15 ± 2.07 µJ, 20.00 ms, 1456.51 µA | −3.6 %¹ |
-| measure (D2) | 804.89 ± 5.20 µJ, 200.30 ms, 1217.70 µA | 805.45 ± 5.93 µJ, 200.10 ms, 1219.77 µA | +0.07 % |
-| transmit (D3) | 940.53 ± 0.43 µJ, 200.27 ms, 1423.15 µA | 941.62 ± 0.39 µJ, 200.01 ms, 1426.65 µA | +0.12 % |
+| cycle (D0) | 1854.77 ± 8.81 µJ, 820.66 ms, 684.88 µA | 1856.47 ± 11.28 µJ, 820.18 ms, 685.91 µA | −0.09 % |
+| wakeup (D1) | 99.71 ± 6.95 µJ, 20.02 ms, 1509.05 µA | 96.15 ± 2.07 µJ, 20.00 ms, 1456.51 µA | +3.7 %¹ |
+| measure (D2) | 804.89 ± 5.20 µJ, 200.30 ms, 1217.70 µA | 805.45 ± 5.93 µJ, 200.10 ms, 1219.77 µA | −0.07 % |
+| transmit (D3) | 940.53 ± 0.43 µJ, 200.27 ms, 1423.15 µA | 941.62 ± 0.39 µJ, 200.01 ms, 1426.65 µA | −0.12 % |
 | deep idle | median 4.16 µA | median 4.25 µA | — |
 
 ¹ The 20 ms wakeup region has ±7 % cycle-to-cycle spread in these
@@ -26,7 +26,8 @@ run-to-run workload variance, not instrument disagreement.
 
 ## Statistical comparison (ppk2-lib validation harness)
 
-Two rounds with `validation.compare_cli`:
+Two rounds with `validation.compare_cli` (Δ is CLI relative to GUI,
+as in the table above):
 
 | | Mean Δ | KS | Contract |
 |---|---|---|---|
@@ -48,11 +49,13 @@ this round.
 # plot (from the zephyr-ppk2 root)
 uv run --with matplotlib python validation/evidence/profiling_lm20/make_plots.py
 
-# aligned comparison (needs a ppk2-lib checkout for the harness)
-python validation/evidence/profiling_lm20/trim_cycles.py \
-    validation/evidence/profiling_lm20/captures/profiling_lm20_cli.csv.gz cli_9c.csv
-python validation/evidence/profiling_lm20/trim_cycles.py \
-    validation/evidence/profiling_lm20/captures/profiling_lm20_gui.csv.gz gui_9c.csv
-cd ../ppk2-lib && uv run --group validation python -m validation.compare_cli \
-    ../zephyr-ppk2/cli_9c.csv ../zephyr-ppk2/gui_9c.csv
+# reports (from this directory; LIB is a ppk2-lib checkout, for its harness)
+compare() { PYTHONPATH=$LIB uv run --project $LIB --group validation \
+    python -m validation.compare_cli "$@"; }
+compare captures/profiling_lm20_cli.csv.gz captures/profiling_lm20_gui.csv.gz \
+    --label-a "zephyr-ppk2 CLI ref" --label-b "GUI golden" --out reports/ref_vs_gui.md
+python trim_cycles.py captures/profiling_lm20_cli.csv.gz cli_9c.csv
+python trim_cycles.py captures/profiling_lm20_gui.csv.gz gui_9c.csv
+compare cli_9c.csv gui_9c.csv \
+    --label-a "CLI 9 cycles" --label-b "GUI 9 cycles" --out reports/ref_vs_gui_aligned.md
 ```

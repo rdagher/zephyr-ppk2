@@ -1,7 +1,7 @@
 # Cross-validation — zephyr-ppk2 CLI ref vs GUI golden
 
-- **zephyr-ppk2 CLI ref:** `/Users/roudy.dagher/dev/perso/ppk2-lib-blog/zephyr-ppk2/ref.csv` — 3,010,560 rows, 30.11 s
-- **GUI golden:** `/Users/roudy.dagher/Downloads/ppk-20260822T174656.csv` — 3,000,001 rows, 30.00 s
+- **zephyr-ppk2 CLI ref:** `captures/profiling_lm20_cli.csv.gz` — 3,010,560 rows, 30.11 s
+- **GUI golden:** `captures/profiling_lm20_gui.csv.gz` — 3,000,001 rows, 30.00 s
 
 ## Schema
 
