@@ -81,7 +81,8 @@ class Ppk2(WestCommand):
         hits = sorted(build_dir.glob("**/zephyr/zephyr.elf"))
         if not hits:
             self.die(f"no zephyr.elf under {build_dir} — pass --build-dir")
-        return hits[0]
+        # A sysbuild tree holds several images: take the one with claims.
+        return next((elf for elf in hits if _channel_names(elf)), hits[0])
 
 
 def _channel_names(elf_path: Path) -> dict[int, str]:
