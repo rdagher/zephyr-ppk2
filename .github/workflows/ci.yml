@@ -60,7 +60,7 @@ jobs:
           rm -rf "$HOME/ncs/downloads" "$HOME/ncs/tmp"
 
   build:
-    name: ${{ matrix.sample }} (${{ matrix.board }})
+    name: ${{ matrix.sample }} (${{ matrix.board }}, trace=${{ matrix.trace }})
     needs: prepare-ncs
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -71,6 +71,12 @@ jobs:
           - nrf52840dk/nrf52840
           - nrf54lm20dk/nrf54lm20b/cpuapp
         sample: [profiling, profiling_cpp, wrap_profiling]
+        trace: [y]
+        include:
+          # The compile-out promise: brackets gone, the wrapped link intact.
+          - board: nrf54lm20dk/nrf54lm20b/cpuapp
+            sample: wrap_profiling
+            trace: n
     steps:
       - uses: actions/checkout@v4
 
@@ -94,4 +100,5 @@ jobs:
             west build --board "${{ matrix.board }}" --pristine=always \
               --build-dir "$GITHUB_WORKSPACE/build" \
               "$GITHUB_WORKSPACE/samples/${{ matrix.sample }}" \
-              -- -DZEPHYR_EXTRA_MODULES="$GITHUB_WORKSPACE"
+              -- -DZEPHYR_EXTRA_MODULES="$GITHUB_WORKSPACE" \
+                 -DCONFIG_PPK2_TRACE=${{ matrix.trace }}
