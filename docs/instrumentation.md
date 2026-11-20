@@ -8,13 +8,13 @@ PPK2 samples every channel alongside the current, so each bracket
 becomes a region the host can price: energy, width, mean and peak
 current — and, on request, the raw sample vector for custom reducers.
 
-A bracket costs one GPIO write per edge. With `CONFIG_PPK2_TRACE=n`
-every form below compiles to nothing — instrumented code builds
-unchanged.
+A bracket costs one GPIO write per edge, and the four channels of the
+samples about 0.6 kB of flash. With `CONFIG_PPK2_TRACE=n` every form
+below compiles to nothing — instrumented code builds unchanged.
 
 ## Claims: owning a channel
 
-Both families start with a claim. Channels are **claimed**: each
+Channels are **claimed**: each
 component owns its marker, a second claim of the same channel in
 another file is a link error (same file: compile error), and claiming
 an unwired channel fails at compile time. The claim also registers
@@ -24,6 +24,9 @@ an unwired channel fails at compile time. The claim also registers
 ```c
 PPK2_TRACE_CLAIM(2, sensor);   /* defines ppk2_ch_sensor, registers "sensor" */
 ```
+
+In-source brackets start with a claim like this one. A
+`PPK2_TRACE_WRAP` line makes its own, named after the function.
 
 ## Two ways to instrument
 
@@ -57,14 +60,21 @@ ppk2_trace_wrap(radio_send sensor_poll)  # -Wl,--wrap=<fn> per function
 ```
 
 The same mechanism reaches code outside the app — HAL or BLE-stack
-calls wrap identically (`ppk2_trace_wrap(bt_le_adv_start)` plus one
-declaration in your trace module).
+calls wrap identically:
+
+```c
+PPK2_TRACE_WRAP(3, int, bt_enable, (bt_ready_cb_t cb), (cb));
+```
+
+```cmake
+ppk2_trace_wrap(bt_enable)
+```
 
 Constraints:
 
-- Wrapping intercepts **cross-TU calls to external symbols** — which
-  means C-linkage functions; C++ names mangle, so C++ code uses the
-  in-source forms instead.
+- Wrapping intercepts **cross-TU calls to external symbols**. The
+  wrapped function needs C linkage (C++ names mangle) and the trace
+  module is a C file; C++ functions use the in-source forms instead.
 - Same-TU calls bypass the wrapper **silently** (the build stays
   green, the marker never fires) — structure the monitored surface to
   be called across files. `samples/wrap_profiling` splits `cycle.c`
@@ -182,3 +192,22 @@ void run_cycle(int reading)
 Unlike `--wrap`'s silent same-TU bypass, the decorator's bypass is
 visible at the call site: the name says which path you took. For
 one-off closures there is also `ppk2::trace_scope(ch, callable)`.
+
+## Limits
+
+- **Channel numbers are literal digits.** `PPK2_TRACE_CLAIM(2, ...)`,
+  not a macro or a constant: the claim pastes the digit into names.
+- **Names are 14 characters at most**, `PPK2_TRACE_WRAP` included,
+  since it names its channel after the function.
+- **`ppk2_ch_<name>` is local to the claiming file.** Expose a function
+  from that file instead of claiming the channel twice.
+- **A bracket is one pin and wall-clock time.** Sleeps, interrupts and
+  other threads that run while it is high are charged to it, and
+  entering the same bracket again (recursion, a second thread) ends
+  the region at the first exit.
+- **Short regions.** The report lists pulses under 5 ms as a sync
+  burst, without statistics, and a pulse shorter than the 10 µs sample
+  period can be missed altogether.
+- **`PPK2_TRACE_SCOPE` is a loop underneath.** Inside one, `continue`
+  leaves the scope, not a loop of your own around it.
+- **C++** needs `CONFIG_STD_CPP17=y`, for either header.

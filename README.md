@@ -88,7 +88,10 @@ evidence, and run instructions in [docs/samples.md](docs/samples.md).
 Either way you need a PPK2, a west workspace (developed and
 bench-validated on NCS v3.3.1; upstream Zephyr works the same way),
 and ppk2-lib's CLI on the host:
-`pip install "git+https://github.com/rdagher/ppk2-lib"`.
+`pip install "git+https://github.com/rdagher/ppk2-lib"` (Python 3.11
+or newer, in the environment west runs from, so that `ppk2` is on its
+PATH). Quit Nordic's Power Profiler app while capturing: one process
+owns the PPK2 at a time.
 
 ## Setup
 
@@ -103,8 +106,9 @@ In your `west.yml` — the `west-commands` line is what adds
       west-commands: scripts/west-commands.yml
 ```
 
-(Ad hoc, without the manifest: `-DZEPHYR_EXTRA_MODULES=/path/to/zephyr-ppk2`
-— build-only, no west commands.) Then in your app:
+Run `west update` to fetch it. (Ad hoc, without the manifest:
+`-DZEPHYR_EXTRA_MODULES=/path/to/zephyr-ppk2` — build-only, no west
+commands.) Then in your app:
 
 1. `CONFIG_PPK2_TRACE=y` in `prj.conf` (needs `CONFIG_GPIO=y`) — the
    wired channels are configured at boot
@@ -120,14 +124,19 @@ In your `west.yml` — the `west-commands` line is what adds
    };
    ```
 
-3. `#include <ppk2_trace.h>` (or `.hpp`), claim channels, mark regions.
+3. `#include <ppk2_trace.h>` (or `.hpp`, which needs
+   `CONFIG_STD_CPP17=y`), claim channels, mark regions.
+
+On the bench, the PPK2's logic inputs go to those pins, its logic `GND`
+to the board's ground and its logic `VCC` to the board's VDD
+([docs/bench.md](docs/bench.md)).
 
 ## Everyday use
 
 ```sh
 west ppk2 list                                   # PPK2s + per-port status
-west ppk2 capture --vdd 3.3 --out trace.csv --seconds 30
 west ppk2 run --vdd 3.3 -- west flash            # power the DUT for a command
+west ppk2 capture --vdd 3.3 --out trace.csv --seconds 30
 west ppk2 attribute trace.csv --vdd 3.3          # labels from the image
 ```
 
@@ -141,8 +150,9 @@ setups: [docs/bench.md](docs/bench.md).
 
 `scripts/check_budget.py` turns attribution into a gate — exit 1 when a
 region blows its energy, width, current (mean or peak), or idle-floor
-budget — power *and* timing regressions both fail the build. On a self-hosted runner wired
-to the bench, the loop is the same commands you run at the desk:
+budget — power *and* timing regressions both fail the build. On a
+self-hosted runner wired to the bench, with the west workspace already
+set up, the loop is the same commands you run at the desk:
 
 ```yaml
 jobs:
