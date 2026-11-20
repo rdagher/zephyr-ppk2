@@ -54,10 +54,15 @@ class Ppk2(WestCommand):
         self._attribute(tail)
 
     def _attribute(self, argv):
-        ap = argparse.ArgumentParser(prog="west ppk2 attribute")
-        ap.add_argument("csv", help="GUI-parity capture CSV")
+        # Only --build-dir is ours; the rest goes to attribute.py as typed.
+        ap = argparse.ArgumentParser(
+            prog="west ppk2 attribute",
+            usage="%(prog)s [--build-dir DIR] CSV [attribute.py options]",
+            epilog="Everything else (the CSV, --vdd, --name, --power-on-ua) "
+            "is passed to scripts/attribute.py.",
+        )
         ap.add_argument("--build-dir", default="build", help="where to find zephyr.elf")
-        ns, extra = ap.parse_known_args(argv)
+        ns, rest = ap.parse_known_args(argv)
 
         elf = self._find_elf(Path(ns.build_dir))
         names = _channel_names(elf)
@@ -70,7 +75,7 @@ class Ppk2(WestCommand):
             self.wrn(f"no PPK2 channel registry in {elf} — attributing unnamed")
         name_args = [f"--name={ch}={label}" for ch, label in sorted(names.items())]
         script = _MODULE_ROOT / "scripts" / "attribute.py"
-        sys.exit(subprocess.call([sys.executable, str(script), ns.csv, *name_args, *extra]))
+        sys.exit(subprocess.call([sys.executable, str(script), *name_args, *rest]))
 
     def _find_elf(self, build_dir: Path) -> Path:
         hits = sorted(build_dir.glob("**/zephyr/zephyr.elf"))
