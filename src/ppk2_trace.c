@@ -6,7 +6,7 @@
 
 #define PIN(ch) GPIO_DT_SPEC_GET_OR(DT_PATH(zephyr_user), ppk2_d##ch##_gpios, {0})
 
-/* The radio channel belongs to the hardware: see ppk2_trace_radio.c. */
+/* The radio channel belongs to the hardware: see nordic/ppk2_trace_radio.c. */
 #ifdef CONFIG_PPK2_TRACE_RADIO
 #define IS_RADIO_CHANNEL(ch) ((ch) == CONFIG_PPK2_TRACE_RADIO_CHANNEL)
 #else

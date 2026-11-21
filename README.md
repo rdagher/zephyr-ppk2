@@ -78,8 +78,13 @@ CONFIG_PPK2_TRACE_RADIO_CHANNEL=0
 ```
 
 The radio's own events raise and drop the pin, through DPPI and GPIOTE.
-The channel is claimed under the name `radio`. nRF54L series with
-MPSL, which is what the nRF Connect SDK uses for Bluetooth LE.
+The channel is claimed under the name `radio`.
+
+This is the one part of the module that is specific to a vendor. It is
+for Nordic's nRF54L series under the nRF Connect SDK, whose radio layer
+(MPSL) publishes those events, and lives in `src/nordic/`. The rest of
+the module is plain Zephyr: devicetree, the GPIO driver and a linker
+option.
 
 ## Requirements
 
@@ -195,7 +200,9 @@ commands above.
 
 - One nRF54LM20 DK and one PPK2 on the bench. The samples build for the
   nRF52840 DK as well, but were not captured on it.
-- The radio channel exists for the nRF54L series only.
+- The radio channel exists for the nRF54L series only. The rest was
+  built for two Nordic boards and run on one; it uses nothing of
+  Nordic's, but has not been built for another vendor's board.
 - Eight channels, one region per channel at a time.
 - A marker written by code costs that code a GPIO write at each end,
   a few microseconds.
