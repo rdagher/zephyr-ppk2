@@ -37,5 +37,5 @@ page of ppk2-lib has both wirings, Ampere meter and Source meter.
 ## nRF52840 DK
 
 Measure with switch SW6 on "nRF only". Otherwise the interface chip and
-the LEDs stay on the measured supply. The samples build for this kit
-but were not captured on it.
+the LEDs stay on the measured supply. `profiling` and `wrap_profiling`
+build for this kit but were not captured on it.

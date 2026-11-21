@@ -33,9 +33,10 @@ from the image of a build.
 
 ## Wake-up bursts
 
-When a DUT wakes from sleep, the PPK2 switches range and can report a
-few hundred mA for 20 to 30 µs. Nordic's filter removes two such
-samples; a third one gets through in about a third of the wake-ups.
+When a DUT wakes from sleep, the PPK2 switches range and reports a few
+hundred mA for 2 or 3 samples. Nordic's filter handles two. With a
+third, its output stays tens of mA too high for 40 µs. That happens at
+about a third of the wake-ups.
 
 A check made on 2026-11-21, whose captures are not kept: the BLE sample
 was captured with a constant load of 0.94 mA, which keeps the PPK2 out

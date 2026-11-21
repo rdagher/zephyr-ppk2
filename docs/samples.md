@@ -49,9 +49,10 @@ functions.
 | D3 transmit | 4 | 201.630 ms | 1397.08 µA | 281.69 ± 0.10 µC |
 | Idle | | | 3.02 µA median | |
 
-The two ways of marking agree within 1 % on every channel. The
-difference is of the size of the drift between two captures taken
-minutes apart.
+The two ways of marking agree within 1.2 % on every channel. The
+largest difference is on `measure`: in the first capture one of its
+regions contains a wake-up burst (a peak of 132 mA), which moves its
+mean. The medians of the charge agree within 0.7 %.
 
 ## `ble_advertising`
 

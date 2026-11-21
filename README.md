@@ -198,18 +198,19 @@ commands above.
 
 ## Limitations
 
-- One nRF54LM20 DK and one PPK2 on the bench. The samples build for the
-  nRF52840 DK as well, but were not captured on it.
+- One nRF54LM20 DK and one PPK2 on the bench. `profiling` and
+  `wrap_profiling` build for the nRF52840 DK as well, but were not
+  captured on it.
 - The radio channel exists for the nRF54L series only. The rest was
   built for two Nordic boards and run on one; it uses nothing of
   Nordic's, but has not been built for another vendor's board.
 - Eight channels, one region per channel at a time.
 - A marker written by code costs that code a GPIO write at each end,
   a few microseconds.
-- When a DUT wakes from sleep, the PPK2 switches range and can report
-  a few hundred mA for 20 to 30 µs that the DUT did not draw. A region
-  that contains a wake-up can therefore read too high, and so can the
-  mean of a whole capture. The report gives the median of the charge
+- When a DUT wakes from sleep, the PPK2 switches range, and its
+  readings can stay tens of mA too high for 40 µs. A region that
+  contains a wake-up can therefore read too high, and so can the mean
+  of a whole capture. The report gives the median of the charge
   next to its mean: when the two differ, trust the median.
   [`evidence/`](evidence/README.md) has the check behind this.
 
