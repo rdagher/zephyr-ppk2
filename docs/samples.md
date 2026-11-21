@@ -52,7 +52,7 @@ functions.
 The two ways of marking agree within 1.2 % on every channel. The
 largest difference is on `measure`: in the first capture one of its
 regions contains a wake-up burst (a peak of 132 mA), which moves its
-mean. The medians of the charge agree within 0.7 %.
+mean. The medians of the charge differ by 0.7 %.
 
 ## `ble_advertising`
 
