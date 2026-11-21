@@ -7,7 +7,7 @@ The captures behind the figures of [samples](../docs/samples.md).
 | Date | 2026-11-21 |
 | DUT | nRF54LM20 DK, each sample built from this repository with nRF Connect SDK v3.3.1 |
 | PPK2 | Source meter mode at 3.3 V, firmware 1.2.4 |
-| Capture | `ppk2 capture` of ppk2-lib at commit `ace11d0`, 10 or 12 s from power-on |
+| Capture | `ppk2 capture` of ppk2-lib at commit `35a6c10`, 60 s from power-on, between 22:50 and 22:57 |
 | Markers | D0 to D3 on P1.12 to P1.15 |
 
 | File | Sample |
@@ -47,5 +47,6 @@ current the DUT drew, and the median is the figure to trust.
 
 ## Limits
 
-One dev kit and one PPK2, one capture per sample. That ppk2-lib agrees
+One dev kit and one PPK2, one capture per sample, so 21 cycles of the
+profiling samples and 59 sensor reads. That ppk2-lib agrees
 with Nordic's Power Profiler app is shown in ppk2-lib, not here.

@@ -34,7 +34,7 @@ build-all:
 
 # Redraw the figures of the documentation from the captures in evidence/.
 plots:
-    uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/profiling.csv.xz --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit --window 3.1 4.5 --title "One cycle of samples/profiling on an nRF54LM20 DK" --out docs/img/profiling.png
+    uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/profiling.csv.xz --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit --window 8.75 10.15 --title "One cycle of samples/profiling on an nRF54LM20 DK" --out docs/img/profiling.png
     uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor --window 5.32 5.78 --title "samples/ble_advertising on an nRF54LM20 DK" --out docs/img/ble_advertising.png
 
 # DK_SERIAL=… targets a specific dev kit (`nrfutil device list`);

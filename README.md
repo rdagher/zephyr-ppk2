@@ -132,7 +132,7 @@ Run `west update`. Then, in the application:
 
 ```sh
 west ppk2 run --source --vdd 3.3 -- west flash          # power the DUT while it is flashed
-west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 10
+west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 60
 west ppk2 attribute trace.csv                           # the report
 west ppk2 plot trace.csv --window 5.3 5.8 --out ble.png # the figure
 ```
@@ -143,10 +143,10 @@ west ppk2 plot trace.csv --window 5.3 5.8 --out ble.png # the figure
 `attribute` prints:
 
 ```text
-capture: 999532 samples, 10.00 s powered
-D0 radio               n=270   width     0.198 ms  avg   4799.91 µA  peak    10343 µA  charge     0.951 ± 0.031 µC (median 0.954)
-D1 sensor              n=9     width     5.040 ms  avg   1371.88 µA  peak     2493 µA  charge     6.914 ± 0.021 µC (median 6.913)
-idle (no channel high) median      1.35 µA  mean     26.96 µA
+capture: 5999755 samples, 60.00 s powered
+D0 radio               n=1701  width     0.198 ms  avg   4881.77 µA  peak    10856 µA  charge     0.967 ± 0.046 µC (median 0.958)
+D1 sensor              n=59    width     5.042 ms  avg   1396.51 µA  peak     7541 µA  charge     7.044 ± 0.608 µC (median 6.928)
+idle (no channel high) median      1.31 µA  mean     25.55 µA
 ```
 
 A region is a stretch where a channel is high. The charge is given as
@@ -164,14 +164,14 @@ current, exceed a budget. In a CI job on a runner wired to the bench:
 ```sh
 west build -b nrf54lm20dk/nrf54lm20b/cpuapp app
 west ppk2 run --source --vdd 3.3 -- west flash
-west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 10
+west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 60
 west ppk2 budget trace.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
 ```
 
 ```text
-PASS region charge 6.91 µC (budget 8.00 µC)
+PASS region charge 7.04 µC (budget 8.00 µC)
 PASS region width 5.04 ms (budget 6.00 ms)
-PASS idle median 1.35 µA (budget 2.00 µA)
+PASS idle median 1.31 µA (budget 2.00 µA)
 ```
 
 The budgets are `--max-ua`, `--max-peak-ua`, `--max-uc`, `--max-ms`,
