@@ -1,9 +1,4 @@
-/*
- * nRF52840 DK (PCA10056) phase-profiling pins — the adjacent A2..A5 run
- * on the Arduino R3 analog header: cycle D0 = P0.28 (A2), wakeup
- * D1 = P0.29 (A3), measure D2 = P0.30 (A4), transmit D3 = P0.31 (A5).
- * P0.28/P0.29 are bench-proven by ppk2-lib's trace-demo.
- */
+/* SPDX-License-Identifier: Apache-2.0 OR MIT */
 / {
 	zephyr,user {
 		ppk2-d0-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;

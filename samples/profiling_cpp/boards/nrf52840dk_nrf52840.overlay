@@ -1,9 +1,0 @@
-/* Same pins as samples/profiling — see that overlay for the rationale. */
-/ {
-	zephyr,user {
-		ppk2-d0-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
-		ppk2-d1-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
-		ppk2-d2-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
-		ppk2-d3-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
-	};
-};

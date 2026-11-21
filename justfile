@@ -11,7 +11,7 @@ DK_SERIAL     := env_var_or_default("DK_SERIAL", "")
 BOARD_54LM20 := "nrf54lm20dk/nrf54lm20b/cpuapp"
 BOARD_52840  := "nrf52840dk/nrf52840"
 
-SAMPLES := "profiling profiling_cpp wrap_profiling"
+SAMPLES := "profiling wrap_profiling"
 ROOT    := justfile_directory()
 
 # Show available recipes.

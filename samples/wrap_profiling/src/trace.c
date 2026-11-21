@@ -1,7 +1,8 @@
-/* The tracing module: the app's entire monitored surface, declared in
- * one place. Nothing else in this sample touches the trace API (main's
- * sync burst aside). CMakeLists.txt routes the calls here via
- * ppk2_trace_wrap().
+/*
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ * Everything this application marks, in one file. No other file knows
+ * about the markers. CMakeLists.txt lists the same functions.
  */
 #include <ppk2_trace.h>
 

@@ -1,4 +1,4 @@
-/* The application phases — no tracing code. */
+/* SPDX-License-Identifier: Apache-2.0 OR MIT */
 #include <zephyr/kernel.h>
 
 #include "app.h"
@@ -12,19 +12,19 @@ static void busy_ms(int ms)
 
 void wakeup(void)
 {
-	busy_ms(20); /* clocks + peripherals up */
+	busy_ms(20);
 }
 
 int measure(void)
 {
-	busy_ms(120);        /* sample sensor */
-	k_sleep(K_MSEC(30)); /* conversion wait */
-	busy_ms(50);         /* crunch */
-	return 42;           /* the reading */
+	busy_ms(120);
+	k_sleep(K_MSEC(30));
+	busy_ms(50);
+	return 42;
 }
 
 int transmit(int reading)
 {
-	busy_ms(200); /* radio-shaped burst */
-	return reading + 1; /* the ack */
+	busy_ms(200);
+	return reading + 1;
 }

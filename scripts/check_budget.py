@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Fail (exit 1) when a capture exceeds its current, charge, width or idle budgets.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+"""Exit 1 when the regions of one channel, or the idle current, exceed a budget.
 
-CI gate on top of attribute.py's region logic:
+    python check_budget.py trace.csv --channel 0 --max-uc 700 --max-ms 1025 --idle-max-ua 5.2
 
-    python check_budget.py trace.csv --channel 0 \\
-        --workload-max-uc 700 --workload-max-ms 1025 --idle-max-ua 5.2
-
-An energy budget (``--workload-max-uj``) needs ``--vdd``: the energy is
-the charge times that voltage.
+An energy budget (``--max-uj``) needs ``--vdd``: the energy is the
+charge times that voltage.
 """
 
 import argparse
@@ -15,149 +13,54 @@ import statistics
 import sys
 from pathlib import Path
 
-from attribute import (
-    POWER_ON_UA,
-    SYNC_PULSE_MAX_S,
-    collect_pulses,
-    first_region_start_ms,
-    load_rows,
-)
+from attribute import POWER_ON_UA, idle, load_rows, powered, regions
 
 
 def main() -> int:
-    """Evaluate the budgets against the capture; return the exit code."""
+    """Check the budgets; return the exit code."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    ap.add_argument("csv_path", help="a capture in the app's CSV format")
-    ap.add_argument(
-        "--vdd", type=float, help="supply voltage in volts, needed by --workload-max-uj"
-    )
-    ap.add_argument(
-        "--channel",
-        type=int,
-        choices=range(8),
-        metavar="{0..7}",
-        default=0,
-        help="workload marker channel (default 0)",
-    )
-    ap.add_argument("--workload-max-uc", type=float, help="max mean workload charge in µC")
-    ap.add_argument(
-        "--workload-max-uj",
-        type=float,
-        help="max mean workload energy in µJ, as charge times --vdd",
-    )
-    ap.add_argument("--workload-max-ms", type=float, help="max mean workload width in ms")
-    ap.add_argument("--workload-max-ua", type=float, help="max mean workload current in µA")
-    ap.add_argument("--workload-max-peak-ua", type=float, help="max peak workload current in µA")
-    ap.add_argument("--idle-max-ua", type=float, help="max median idle current in µA")
-    ap.add_argument(
-        "--power-on-ua",
-        type=float,
-        default=POWER_ON_UA,
-        help="rail-up trim threshold in µA, 0 disables (default 200)",
-    )
+    ap.add_argument("csv_path", type=Path, help="a capture in the app's CSV format")
+    ap.add_argument("--channel", type=int, choices=range(8), default=0, metavar="{0..7}")
+    ap.add_argument("--max-ua", type=float, help="mean current of a region, in µA")
+    ap.add_argument("--max-peak-ua", type=float, help="highest sample of any region, in µA")
+    ap.add_argument("--max-uc", type=float, help="mean charge of a region, in µC")
+    ap.add_argument("--max-ms", type=float, help="mean width of a region, in ms")
+    ap.add_argument("--max-uj", type=float, help="mean energy of a region, in µJ; needs --vdd")
+    ap.add_argument("--idle-max-ua", type=float, help="median current with no channel high")
+    ap.add_argument("--vdd", type=float, help="supply voltage in volts, for --max-uj")
+    ap.add_argument("--power-on-ua", type=float, default=POWER_ON_UA, help="as in attribute.py")
     args = ap.parse_args()
+    if args.max_uj is not None and args.vdd is None:
+        ap.error("--max-uj needs --vdd")
 
-    if args.workload_max_uj is not None and args.vdd is None:
-        ap.error("--workload-max-uj needs --vdd")
-    budgets = (
-        args.workload_max_uc,
-        args.workload_max_uj,
-        args.workload_max_ms,
-        args.workload_max_ua,
-        args.workload_max_peak_ua,
-        args.idle_max_ua,
+    rows = powered(load_rows(args.csv_path), args.power_on_ua)
+    found = regions(rows, args.channel)
+    idle_ua = idle(rows)
+    mean = statistics.fmean
+    # (budget, what it limits, unit, the measured value)
+    checks = (
+        (args.max_ua, "region current", "µA", lambda: mean(r.mean_ua for r in found)),
+        (args.max_peak_ua, "region peak", "µA", lambda: max(r.peak_ua for r in found)),
+        (args.max_uc, "region charge", "µC", lambda: mean(r.charge_uc for r in found)),
+        (args.max_ms, "region width", "ms", lambda: mean(r.duration_s for r in found) * 1000),
+        (args.max_uj, "region energy", "µJ", lambda: mean(r.charge_uc for r in found) * args.vdd),
+        (args.idle_max_ua, "idle median", "µA", lambda: statistics.median(idle_ua)),
     )
-    if all(b is None for b in budgets):
-        ap.error("at least one budget option is required")
-
-    rows = load_rows(Path(args.csv_path))
-    if not rows:
-        print("FAIL empty capture")
-        return 1
-
-    # Skip the unpowered pre-rail region (logic pins float there).
-    if args.power_on_ua > 0:
-        power_i = next((i for i, r in enumerate(rows) if r[1] > args.power_on_ua), 0)
-        rows = rows[power_i:]
-
-    pulses = collect_pulses(rows, args.channel)
-    workloads = [p for p in pulses if p.duration_s >= SYNC_PULSE_MAX_S]
-    boot_end_ms = first_region_start_ms(rows)
-    idle_ua = [ua for t, ua, levels in rows if t > boot_end_ms and not levels]
+    if all(budget is None for budget, *_ in checks):
+        ap.error("give at least one budget")
 
     failed = False
-    if args.workload_max_uc is not None:
-        if not workloads:
-            print("FAIL no workloads on the channel — cannot check charge budget")
+    for budget, what, unit, measure in checks:
+        if budget is None:
+            continue
+        if not (idle_ua if what.startswith("idle") else found):
+            print(f"FAIL {what}: nothing to measure on D{args.channel}")
             failed = True
-        else:
-            mean_uc = statistics.fmean(p.charge_uc for p in workloads)
-            ok = mean_uc <= args.workload_max_uc
-            print(
-                f"{'PASS' if ok else 'FAIL'} workload charge "
-                f"{mean_uc:.1f} µC (budget {args.workload_max_uc:.1f} µC, n={len(workloads)})"
-            )
-            failed |= not ok
-    if args.workload_max_uj is not None:
-        if not workloads:
-            print("FAIL no workloads on the channel — cannot check energy budget")
-            failed = True
-        else:
-            mean_uj = statistics.fmean(p.energy_uj(args.vdd) for p in workloads)
-            ok = mean_uj <= args.workload_max_uj
-            print(
-                f"{'PASS' if ok else 'FAIL'} workload energy "
-                f"{mean_uj:.1f} µJ (budget {args.workload_max_uj:.1f} µJ, n={len(workloads)})"
-            )
-            failed |= not ok
-    if args.workload_max_ms is not None:
-        if not workloads:
-            print("FAIL no workloads on the channel — cannot check width budget")
-            failed = True
-        else:
-            mean_ms = statistics.fmean(p.duration_s * 1000.0 for p in workloads)
-            ok = mean_ms <= args.workload_max_ms
-            print(
-                f"{'PASS' if ok else 'FAIL'} workload width "
-                f"{mean_ms:.1f} ms (budget {args.workload_max_ms:.1f} ms, n={len(workloads)})"
-            )
-            failed |= not ok
-    if args.workload_max_ua is not None:
-        if not workloads:
-            print("FAIL no workloads on the channel — cannot check current budget")
-            failed = True
-        else:
-            mean_ua = statistics.fmean(p.mean_current_ua() for p in workloads)
-            ok = mean_ua <= args.workload_max_ua
-            print(
-                f"{'PASS' if ok else 'FAIL'} workload current "
-                f"{mean_ua:.1f} µA (budget {args.workload_max_ua:.1f} µA, n={len(workloads)})"
-            )
-            failed |= not ok
-    if args.workload_max_peak_ua is not None:
-        if not workloads:
-            print("FAIL no workloads on the channel — cannot check peak budget")
-            failed = True
-        else:
-            peak_ua = max(p.peak_ua for p in workloads)
-            ok = peak_ua <= args.workload_max_peak_ua
-            print(
-                f"{'PASS' if ok else 'FAIL'} workload peak "
-                f"{peak_ua:.1f} µA (budget {args.workload_max_peak_ua:.1f} µA, n={len(workloads)})"
-            )
-            failed |= not ok
-    if args.idle_max_ua is not None:
-        if not idle_ua:
-            print("FAIL no idle samples found — cannot check idle budget")
-            failed = True
-        else:
-            median_ua = statistics.median(idle_ua)
-            ok = median_ua <= args.idle_max_ua
-            print(
-                f"{'PASS' if ok else 'FAIL'} idle median "
-                f"{median_ua:.2f} µA (budget {args.idle_max_ua:.2f} µA)"
-            )
-            failed |= not ok
+            continue
+        value = measure()
+        ok = value <= budget
+        print(f"{'PASS' if ok else 'FAIL'} {what} {value:.2f} {unit} (budget {budget:.2f} {unit})")
+        failed |= not ok
     return 1 if failed else 0
 
 

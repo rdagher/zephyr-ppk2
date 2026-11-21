@@ -1,9 +1,4 @@
-/*
- * nRF54LM20DK phase-profiling pins — the adjacent P1.12..P1.15 run on
- * the GPIO_P1 header: cycle D0 = P1.12, wakeup D1 = P1.13 (both
- * bench-proven by ppk2-lib's trace-demo), measure D2 = P1.14,
- * transmit D3 = P1.15 (unclaimed by any board peripheral).
- */
+/* SPDX-License-Identifier: Apache-2.0 OR MIT */
 / {
 	zephyr,user {
 		ppk2-d0-gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;

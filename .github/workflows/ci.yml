@@ -70,10 +70,10 @@ jobs:
         board:
           - nrf52840dk/nrf52840
           - nrf54lm20dk/nrf54lm20b/cpuapp
-        sample: [profiling, profiling_cpp, wrap_profiling]
+        sample: [profiling, wrap_profiling]
         trace: [y]
         include:
-          # The compile-out promise: brackets gone, the wrapped link intact.
+          # With the option off, the markers are gone and the sample still builds.
           - board: nrf54lm20dk/nrf54lm20b/cpuapp
             sample: wrap_profiling
             trace: n

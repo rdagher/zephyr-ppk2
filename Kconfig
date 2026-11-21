@@ -1,30 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
 config PPK2_TRACE
-	bool "PPK2 trace marker channels"
+	bool "PPK2 trace markers"
 	depends on GPIO
 	help
-	  GPIO markers (ppk2_trace.h / ppk2_trace.hpp) wired to the PPK2's
-	  logic inputs D0..D7 for per-region time, current, and energy
-	  attribution. Pins come from the zephyr,user devicetree properties
-	  ppk2-d0-gpios .. ppk2-d7-gpios. When disabled, the marker API
-	  compiles to nothing.
-
-if PPK2_TRACE
-
-config PPK2_TRACE_AUTO_INIT
-	bool "Initialize the wired channels at boot"
-	default y
-	help
-	  Configure every wired marker channel (output, low) from a
-	  SYS_INIT hook. Disable to call ppk2_trace_init() manually.
-
-config PPK2_TRACE_INIT_PRIORITY
-	int "Init priority (POST_KERNEL)"
-	depends on PPK2_TRACE_AUTO_INIT
-	range 0 99
-	default 80
-	help
-	  Must run after the GPIO controllers serving the marker pins —
-	  only relevant when those are late-init devices such as GPIO
-	  expanders.
-
-endif # PPK2_TRACE
+	  GPIO markers (ppk2_trace.h) wired to the digital inputs D0..D7 of
+	  a PPK2, to tell which code a current was drawn by. The pins come
+	  from the zephyr,user devicetree properties ppk2-d0-gpios to
+	  ppk2-d7-gpios. When disabled, the markers compile to nothing.
