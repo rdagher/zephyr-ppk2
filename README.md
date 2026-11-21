@@ -211,8 +211,7 @@ commands above.
   that contains a wake-up can therefore read too high, and so can the
   mean of a whole capture. The report gives the median of the charge
   next to its mean: when the two differ, trust the median.
-  [`evidence/`](evidence/README.md) has the measurement, and a way
-  around it: a constant load of about 1 mA.
+  [`evidence/`](evidence/README.md) has the check behind this.
 
 ## License
 
