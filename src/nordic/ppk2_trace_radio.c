@@ -4,6 +4,12 @@
  * The radio channel: high while the radio is on, with no code running.
  * MPSL publishes the radio's READY and DISABLED events on two DPPI
  * channels; a GPIOTE task on the pin subscribes to them.
+ *
+ * The nRF Connect SDK has an option for this, CONFIG_MPSL_PIN_DEBUG
+ * (nrf/subsys/mpsl/pin_debug). Its board list leaves the nRF54LM20 DK
+ * out, in v3.3.1 and still on main in November 2026. This file follows
+ * the same pattern for one pin, written from the public interfaces of
+ * MPSL and nrfx. It can go once that option covers the board.
  */
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
