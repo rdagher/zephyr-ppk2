@@ -129,11 +129,13 @@ Run `west update`. Then, in the application:
 west ppk2 run --source --vdd 3.3 -- west flash          # power the DUT while it is flashed
 west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 10
 west ppk2 attribute trace.csv                           # the report
+west ppk2 plot trace.csv --window 5.3 5.8 --out ble.png # the figure
 ```
 
 `list`, `capture`, `run` and `power` are the commands of ppk2-lib.
-`attribute` finds `zephyr.elf` under `--build-dir` (default `build`),
-reads the names of the claimed channels from it, and prints:
+`attribute` and `plot` find `zephyr.elf` under `--build-dir` (default
+`build`) and read the names of the claimed channels from it.
+`attribute` prints:
 
 ```text
 capture: 999532 samples, 10.00 s powered
@@ -146,21 +148,19 @@ A region is a stretch where a channel is high. The charge is given as
 the mean ± the standard deviation over the regions. `--vdd 3.3` adds an
 energy column, the charge times that voltage.
 
-The figure at the top of this page is drawn by `scripts/plot.py` from
-the same capture.
+`plot` draws the figure at the top of this page from the same capture.
+It needs matplotlib and numpy in west's Python environment.
 
 ## Budget check
 
-`scripts/check_budget.py` exits 1 when the regions of a channel, or the
-idle current, exceed a budget. In a CI job on a runner wired to the
-bench:
+`west ppk2 budget` exits 1 when the regions of a channel, or the idle
+current, exceed a budget. In a CI job on a runner wired to the bench:
 
 ```sh
 west build -b nrf54lm20dk/nrf54lm20b/cpuapp app
 west ppk2 run --source --vdd 3.3 -- west flash
 west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 10
-python zephyr-ppk2/scripts/check_budget.py trace.csv --channel 1 \
-    --max-uc 8 --max-ms 6 --idle-max-ua 2
+west ppk2 budget trace.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
 ```
 
 ```text

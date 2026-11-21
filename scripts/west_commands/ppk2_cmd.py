@@ -1,9 +1,9 @@
-"""West extension: drive the PPK2 harness from the west workflow.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+"""``west ppk2``: capture with ppk2-lib, then report on the marked channels.
 
-``list``/``capture``/``run``/``power`` pass through to ppk2-lib's CLI.
-``attribute`` reads the claimed channel names from the built ELF's
-registry (the iterable section PPK2_TRACE_CLAIM fills), so the
-``--name`` flags are derived from the firmware instead of retyped.
+``list``, ``capture``, ``run`` and ``power`` are the commands of ppk2-lib.
+``attribute``, ``plot`` and ``budget`` run the scripts of this module.
+The first two name the channels from the image of the build.
 """
 
 import argparse
@@ -14,18 +14,17 @@ from shutil import which
 
 from west.commands import WestCommand
 
-_MODULE_ROOT = Path(__file__).resolve().parents[2]
-_PASSTHROUGH = ("list", "capture", "run", "power")
+SCRIPTS = Path(__file__).resolve().parents[1]
+FROM_PPK2_LIB = ("list", "capture", "run", "power")
+OURS = {"attribute": "attribute.py", "plot": "plot.py", "budget": "check_budget.py"}
 
 
 class Ppk2(WestCommand):
     def __init__(self):
         super().__init__(
             "ppk2",
-            "PPK2 power profiling (list / capture / run / power / attribute)",
-            "Capture, power, and attribute with the PPK2 harness.\n"
-            "list/capture/run/power pass their arguments to ppk2-lib's CLI;\n"
-            "attribute names the channels from the built ELF's registry.",
+            "capture with a PPK2 and report on the marked channels",
+            __doc__,
             accepts_unknown_args=True,
         )
 
@@ -35,68 +34,40 @@ class Ppk2(WestCommand):
             help=self.help,
             description=self.description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
-            usage="west ppk2 {list,capture,run,power,attribute} [args...]",
         )
-        parser.add_argument("sub", choices=(*_PASSTHROUGH, "attribute"))
+        parser.add_argument("sub", choices=(*FROM_PPK2_LIB, *OURS))
+        parser.add_argument("--build-dir", default="build", help="where zephyr.elf is")
         parser.add_argument("args", nargs=argparse.REMAINDER)
         return parser
 
     def do_run(self, args, unknown_args):
-        tail = [*unknown_args, *args.args]
-        if args.sub in _PASSTHROUGH:
+        rest = [*unknown_args, *args.args]
+        if args.sub in FROM_PPK2_LIB:
             cli = which("ppk2")
             if cli is None:
-                self.die(
-                    'ppk2 CLI not found — pip install "git+https://github.com/rdagher/ppk2-lib"'
-                )
-            sys.exit(subprocess.call([cli, args.sub, *tail]))
-        self._attribute(tail)
+                self.die('ppk2 not found: pip install "git+https://github.com/rdagher/ppk2-lib"')
+            sys.exit(subprocess.call([cli, args.sub, *rest]))
 
-    def _attribute(self, argv):
-        # Only --build-dir is ours; the rest goes to attribute.py as typed.
-        ap = argparse.ArgumentParser(
-            prog="west ppk2 attribute",
-            usage="%(prog)s [--build-dir DIR] CSV [attribute.py options]",
-            epilog="Everything else (the CSV, --vdd, --name, --power-on-ua) "
-            "is passed to scripts/attribute.py.",
-        )
-        ap.add_argument("--build-dir", default="build", help="where to find zephyr.elf")
-        ns, rest = ap.parse_known_args(argv)
-
-        elf = self._find_elf(Path(ns.build_dir))
-        names = _channel_names(elf)
-        if names:
-            self.inf(
-                f"channel names from {elf}: "
-                + ", ".join(f"D{ch}={label}" for ch, label in sorted(names.items()))
-            )
-        else:
-            self.wrn(f"no PPK2 channel registry in {elf} — attributing unnamed")
-        name_args = [f"--name={ch}={label}" for ch, label in sorted(names.items())]
-        script = _MODULE_ROOT / "scripts" / "attribute.py"
-        sys.exit(subprocess.call([sys.executable, str(script), *name_args, *rest]))
-
-    def _find_elf(self, build_dir: Path) -> Path:
-        hits = sorted(build_dir.glob("**/zephyr/zephyr.elf"))
-        if not hits:
-            self.die(f"no zephyr.elf under {build_dir} — pass --build-dir")
-        # A sysbuild tree holds several images: take the one with claims.
-        return next((elf for elf in hits if _channel_names(elf)), hits[0])
+        names = []
+        if args.sub != "budget":
+            elves = sorted(Path(args.build_dir).glob("**/zephyr/zephyr.elf"))
+            if not elves:
+                self.die(f"no zephyr.elf under {args.build_dir}: pass --build-dir")
+            # A sysbuild tree holds several images: take the one with claims.
+            found = next(filter(None, map(channel_names, elves)), {})
+            names = [f"--name={ch}={label}" for ch, label in sorted(found.items())]
+        sys.exit(subprocess.call([sys.executable, SCRIPTS / OURS[args.sub], *names, *rest]))
 
 
-def _channel_names(elf_path: Path) -> dict[int, str]:
-    """Decode {channel: name} from the ppk2_trace_channel_area section."""
+def channel_names(elf: Path) -> dict[int, str]:
+    """The channels claimed in an image: {channel: name}."""
     from elftools.elf.elffile import ELFFile
 
-    with open(elf_path, "rb") as f:
+    with elf.open("rb") as f:
         section = ELFFile(f).get_section_by_name("ppk2_trace_channel_area")
-        if section is None:
-            return {}
-        data = section.data()
-    names: dict[int, str] = {}
-    for off in range(0, len(data) - 15, 16):
-        ch = data[off]
-        label = data[off + 1 : off + 16].split(b"\0", 1)[0].decode("ascii", "replace")
-        if label and ch < 8:
-            names[ch] = label
-    return names
+        data = section.data() if section else b""
+    # struct ppk2_trace_channel: one byte of channel, 15 of name.
+    return {
+        data[at]: data[at + 1 : at + 16].split(b"\0", 1)[0].decode("ascii", "replace")
+        for at in range(0, len(data), 16)
+    }
