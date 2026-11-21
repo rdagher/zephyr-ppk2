@@ -1,0 +1,34 @@
+# Evidence
+
+The captures behind the figures of [samples](../docs/samples.md).
+
+| | |
+|---|---|
+| Date | 2026-11-21 |
+| DUT | nRF54LM20 DK, each sample built from this repository with nRF Connect SDK v3.3.1 |
+| PPK2 | Source meter mode at 3.3 V, firmware 1.2.4 |
+| Capture | `ppk2 capture` of ppk2-lib at commit `ace11d0`, 10 or 12 s from power-on |
+| Markers | D0 to D3 on P1.12 to P1.15 |
+
+| File | Sample |
+|---|---|
+| `profiling.csv.xz` | `samples/profiling` |
+| `wrap_profiling.csv.xz` | `samples/wrap_profiling` |
+| `ble_advertising.csv.xz` | `samples/ble_advertising` |
+
+## Reproducing the figures
+
+```sh
+python scripts/attribute.py evidence/profiling.csv.xz \
+    --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit
+python scripts/attribute.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor
+just plots
+```
+
+The names are passed by hand here. `west ppk2 attribute` reads them
+from the image of a build.
+
+## Limits
+
+One dev kit and one PPK2, one capture per sample. That ppk2-lib agrees
+with Nordic's Power Profiler app is shown in ppk2-lib, not here.

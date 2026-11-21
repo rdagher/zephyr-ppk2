@@ -1,8 +1,8 @@
-# zephyr-ppk2 — local recipes (multi-sample, multi-board).
+# zephyr-ppk2: local recipes.
 #
 # Toolchain: the nrfutil-managed NCS install at /opt/nordic/ncs
 # (NCS_VERSION picks the version; NCS_WORKSPACE overrides the path).
-# Host side: capture with ppk2-lib's CLI, attribute with scripts/ — see README.
+# Host side: capture with ppk2-lib, report with scripts/. See the README.
 
 NCS_VERSION   := env_var_or_default("NCS_VERSION", "v3.3.1")
 NCS_WORKSPACE := env_var_or_default("NCS_WORKSPACE", "/opt/nordic/ncs/" + NCS_VERSION)
@@ -18,7 +18,7 @@ ROOT    := justfile_directory()
 _default:
     @just --list --unsorted
 
-# Toolchain wrapper — runs args inside the NCS toolchain context with
+# Toolchain wrapper: runs args inside the NCS toolchain context with
 # CWD set to the workspace so west finds its manifest.
 _tc *args:
     @cd "{{NCS_WORKSPACE}}" && nrfutil sdk-manager toolchain launch --ncs-version {{NCS_VERSION}} -- {{args}}
@@ -27,9 +27,15 @@ _tc *args:
 build sample="profiling" board=BOARD_54LM20:
     @just _tc west build --board "{{board}}" --pristine=auto --build-dir "{{ROOT}}/samples/{{sample}}/build/$(echo '{{board}}' | cut -d/ -f1)" "{{ROOT}}/samples/{{sample}}" -- -DZEPHYR_EXTRA_MODULES="{{ROOT}}"
 
-# Build every sample for both DKs.
+# Build every sample for the boards it supports.
 build-all:
     @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}"; just build $s "{{BOARD_52840}}"; done
+    @just build ble_advertising "{{BOARD_54LM20}}"
+
+# Redraw the figures of the documentation from the captures in evidence/.
+plots:
+    uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/profiling.csv.xz --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit --window 3.1 4.5 --title "One cycle of samples/profiling on an nRF54LM20 DK" --out docs/img/profiling.png
+    uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor --window 5.32 5.78 --title "samples/ble_advertising on an nRF54LM20 DK" --out docs/img/ble_advertising.png
 
 # DK_SERIAL=… targets a specific dev kit (`nrfutil device list`);
 # empty means the only attached DK. Power the rail first if the PPK2

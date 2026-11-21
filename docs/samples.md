@@ -1,70 +1,71 @@
-# Running the samples
+# Samples
 
-Three siblings run the same low-power application cycle —
-**wakeup (D1) → measure (D2) → transmit (D3)** inside a cycle marker
-(D0), a 400 ms in-cycle sleep, then 2 s deep idle — each instrumented
-a different way. Wire a dev kit first: [bench.md](bench.md).
+Three applications, each with its markers. The figures below were
+measured on 2026-11-21 on an nRF54LM20 DK, with the PPK2 in Source
+meter mode at 3.3 V. The captures are in [`evidence/`](../evidence/README.md).
 
-## Quickstart (nRF54LM20DK, ammeter 3.3 V)
+## Running a sample
+
+Wire the dev kit first: see [bench](bench.md).
 
 ```sh
 west build -b nrf54lm20dk/nrf54lm20b/cpuapp zephyr-ppk2/samples/profiling
-west ppk2 run --vdd 3.3 -- west flash
-west ppk2 capture --vdd 3.3 --out trace.csv --seconds 30
-west ppk2 attribute trace.csv --vdd 3.3
+west ppk2 run --source --vdd 3.3 -- west flash
+west ppk2 capture --source --vdd 3.3 --out trace.csv --seconds 12
+west ppk2 attribute trace.csv
 ```
 
-`attribute` reads the channel names from the built ELF — no `--name`
-flags to keep in sync with the firmware.
+## `profiling`
 
-Every sample opens with three 1 ms pulses on D0: a sync burst that
-marks boot in the trace. The report lists pulses shorter than 5 ms as
-a burst, not as regions.
+A cycle every 2.8 s: `wakeup` (20 ms busy), `measure` (120 ms busy, a
+30 ms wait, 50 ms busy), `transmit` (200 ms busy), then a 400 ms sleep
+inside the cycle. Each function starts with `PPK2_TRACE_SCOPE`.
 
-## `samples/profiling` — annotation
+| Channel | Regions | Width | Mean current | Charge |
+|---|---|---|---|---|
+| D0 cycle | 4 | 823.175 ms | 676.53 µA | 556.9 ± 2.4 µC |
+| D1 wakeup | 5 | 20.158 ms | 1402.74 µA | 28.276 ± 0.094 µC |
+| D2 measure | 4 | 201.375 ms | 1202.51 µA | 242.2 ± 2.0 µC |
+| D3 transmit | 4 | 201.577 ms | 1407.88 µA | 283.80 ± 0.17 µC |
+| Idle | | | 3.02 µA median | |
 
-Phases are annotated inside their functions (`PPK2_TRACE_FUNCTION` in
-`cycle.c` and `phases.c`) — the call sites and `main()` are identical
-to the untraced version. The dataflow carries a tripwire:
-`transmit(measure())` must return the right ack or the cycle visibly
-shortens.
+![One cycle of the profiling sample](img/profiling.png)
 
-Reference numbers (nRF54LM20DK, ammeter 3.3 V, bench-measured 2026-08):
+The 30 ms wait inside `measure` shows as a dip, and the 400 ms sleep as
+the flat stretch while D0 stays high.
 
-| Region | n | energy | width | mean current | peak¹ |
-|---|---|---|---|---|---|
-| cycle (D0) | 10 | 1855 ± 9 µJ | 820.7 ms | 685 µA | 176 mA |
-| wakeup (D1) | 11 | 100 ± 7 µJ | 20.0 ms | 1509 µA | 18.8 mA |
-| measure (D2) | 11 | 805 ± 5 µJ | 200.3 ms | 1218 µA | 126 mA |
-| transmit (D3) | 11 | 941 ± 0.4 µJ | 200.3 ms | 1423 µA | 2.0 mA |
-| deep idle | | | | median 4.16 µA | |
+## `wrap_profiling`
 
-¹ Raw single-sample maxima include wake-up inrush and the PPK2's
-auto-range transients: measure's 126 mA spike is the `k_sleep` wake-up
-landing inside the bracket, while transmit — no sleep inside — peaks
-at a clean 2.0 mA. Budget raw peaks with generous headroom
-(`--workload-max-peak-ua`), or keep the per-region sample vector
-(`collect_pulses(..., keep_samples=True)`) and write a robust reducer.
+The same application with no marker in its source. `trace.c` lists the
+four functions with `PPK2_TRACE_WRAP`, and `CMakeLists.txt` passes them
+to `ppk2_trace_wrap()`. The names in the report are those of the
+functions.
 
-Cross-validated against a Nordic GUI golden capture of the same bench.
-Over nine marker-aligned cycles: mean Δ +0.27 %, KS 0.0175. Cycle,
-measure and transmit energy agree within 0.12 %; the 20 ms wakeup
-phase differs by 3.7 %, inside its cycle-to-cycle spread. Committed
-under
-[`validation/evidence/profiling_lm20/`](../validation/evidence/profiling_lm20/).
+| Channel | Regions | Width | Mean current | Charge |
+|---|---|---|---|---|
+| D0 run_cycle | 4 | 823.293 ms | 671.05 µA | 552.5 ± 2.1 µC |
+| D1 wakeup | 5 | 20.158 ms | 1392.80 µA | 28.076 ± 0.073 µC |
+| D2 measure | 4 | 201.435 ms | 1188.83 µA | 239.47 ± 0.12 µC |
+| D3 transmit | 4 | 201.630 ms | 1397.08 µA | 281.69 ± 0.10 µC |
+| Idle | | | 3.02 µA median | |
 
-## `samples/wrap_profiling` — the tracing module
+The two ways of marking agree within 1 % on every channel. The
+difference is of the size of the drift between two captures taken
+minutes apart.
 
-File-for-file the same app, instrumented without touching it: the
-monitored surface is `src/trace.c` (four wrap declarations) plus
-`ppk2_trace_wrap(run_cycle wakeup measure transmit)` in CMake. Diff
-the two samples to compare the approaches. Bench-measured within
-0.35 % of the annotation sibling on every phase, identical idle floor
-— wrapping is measurably free
-([`siblings.md`](../validation/evidence/profiling_lm20/siblings.md)).
+## `ble_advertising`
 
-## `samples/profiling_cpp` — C++ RAII
+A BLE advertiser that reads a sensor once a second and puts the value
+in its advertising data. D0 is the radio channel, driven by hardware.
+D1 is the sensor read, a 5 ms busy wait marked in the source.
 
-Same cycle with a `TraceScope` at the top of each function; `transmit`
-early-returns every 8th cycle and the guard still drops its marker —
-visible on the bench as one lean ~620 ms cycle per eight.
+| Channel | Regions | Width | Mean current | Charge |
+|---|---|---|---|---|
+| D0 radio | 270 | 0.198 ms | 4799.91 µA | 0.951 ± 0.031 µC |
+| D1 sensor | 9 | 5.040 ms | 1371.88 µA | 6.914 ± 0.021 µC |
+| Idle | | | 1.35 µA median | |
+
+![The BLE sample around one sensor read](img/ble_advertising.png)
+
+There are three radio pulses per advertising event, one per advertising
+channel, and an event about every 100 ms.

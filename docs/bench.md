@@ -1,56 +1,41 @@
-# Bench: wiring, build & flash
+# Bench
 
 ## Wiring
 
-Overlays are included for:
-
 | Dev kit | Board target | D0 | D1 | D2 | D3 |
 |---|---|---|---|---|---|
-| nRF52840 DK | `nrf52840dk/nrf52840` | P0.28 (A2) | P0.29 (A3) | P0.30 (A4) | P0.31 (A5) |
-| nRF54LM20DK | `nrf54lm20dk/nrf54lm20b/cpuapp` | P1.12 | P1.13 | P1.14 | P1.15 |
+| nRF54LM20 DK | `nrf54lm20dk/nrf54lm20b/cpuapp` | P1.12 | P1.13 | P1.14 | P1.15 |
+| nRF52840 DK | `nrf52840dk/nrf52840` | P0.28 | P0.29 | P0.30 | P0.31 |
 
-From the PPK2's logic port: `D0..D3` clips to the pins above, `GND` to
-DK ground, and `VCC` to the DK's VDD rail — the logic-port VCC sets
-the digital-input thresholds, so it must follow the DUT's I/O voltage.
-Any other board is one overlay away (`zephyr,user` pins).
+From the PPK2's logic port: `D0` to `D3` to the pins above, `GND` to
+the board's ground, and `VCC` to the board's supply. `VCC` sets the
+levels at which the digital inputs switch, so it must follow the
+voltage of the DUT's pins.
 
-## Build & flash
+Another board needs only an overlay with its `zephyr,user` pins.
 
-```sh
-west build -b nrf54lm20dk/nrf54lm20b/cpuapp zephyr-ppk2/samples/profiling
-```
+## Power and flashing
 
-(or `just build [sample] [board]` — see `just --list`.)
-
-With the PPK2 in the DUT's supply path, the SWD port is dead until the
-rail is up. Two equivalent recipes:
+With the PPK2 in the DUT's supply path, the debug port does not answer
+until the power is on.
 
 ```sh
-# A: hold the rail from a second shell for as long as you need
-west ppk2 power on --vdd 3.3 --hold         # Ctrl-C releases
-west flash                                  # from another shell
-
-# B: one-shot — power the DUT just for the flash
-west ppk2 run --vdd 3.3 -- west flash
+west ppk2 run --source --vdd 3.3 -- west flash     # power the DUT for the flash
+west ppk2 power on --source --vdd 3.3 --hold       # or hold it on until Ctrl-C
 ```
 
-Source mode (PPK2 supplies the DUT): add `--source --vdd 3.0` to the
-`run`/`capture` commands.
+Without `--source` the PPK2 is in Ampere meter mode and measures a DUT
+that has its own supply.
 
-## Bench setup: nRF54LM20DK (ammeter, 3.3 V — the reference bench)
+## nRF54LM20 DK
 
-DK on USB (powers board + J-Link); pull the current-measurement jumper
-and put the PPK2 in series across that header — `VIN` supply side,
-`VOUT` nRF side. No isolation switches needed: the reference numbers
-in [samples.md](samples.md) were taken with everything connected
-(LEDs, SWD, VCOMs routed) and still reach the µA-scale sleep floor.
+Put the PPK2 across the kit's current-measurement header, as for
+Nordic's app. Everything else on the board stays connected. The
+[getting started](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/getting-started.md)
+page of ppk2-lib has both wirings, Ampere meter and Source meter.
 
-## Bench setup: nRF52840 DK (source, 3.0 V)
+## nRF52840 DK
 
-PPK2 `VOUT` → the P21 "External supply" header, then: SW8 ON (power),
-SW9 = VDD (take power from P21), SW10 ON (enable P21), and SW6 =
-**nRF only** while measuring — it isolates the interface-MCU section
-(~85 mA of parasitic floor in DEFAULT) and disconnects LEDs/buttons.
-Flip SW6 to DEFAULT once to see the board alive, back to nRF only to
-measure; in the measurement position the trace itself is the liveness
-signal.
+Measure with switch SW6 on "nRF only". Otherwise the interface chip and
+the LEDs stay on the measured supply. The samples build for this kit
+but were not captured on it.
