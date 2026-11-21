@@ -6,13 +6,20 @@
 
 #define PIN(ch) GPIO_DT_SPEC_GET_OR(DT_PATH(zephyr_user), ppk2_d##ch##_gpios, {0})
 
+/* The radio channel belongs to the hardware: see ppk2_trace_radio.c. */
+#ifdef CONFIG_PPK2_TRACE_RADIO
+#define IS_RADIO_CHANNEL(ch) ((ch) == CONFIG_PPK2_TRACE_RADIO_CHANNEL)
+#else
+#define IS_RADIO_CHANNEL(ch) false
+#endif
+
 static const struct gpio_dt_spec pins[] = {
 	PIN(0), PIN(1), PIN(2), PIN(3), PIN(4), PIN(5), PIN(6), PIN(7),
 };
 
 void ppk2_trace_set(int ch, bool on)
 {
-	if (ch >= 0 && ch < (int)ARRAY_SIZE(pins) && pins[ch].port != NULL) {
+	if (ch >= 0 && ch < (int)ARRAY_SIZE(pins) && pins[ch].port != NULL && !IS_RADIO_CHANNEL(ch)) {
 		(void)gpio_pin_set_dt(&pins[ch], on);
 	}
 }
@@ -20,7 +27,7 @@ void ppk2_trace_set(int ch, bool on)
 static int ppk2_trace_init(void)
 {
 	ARRAY_FOR_EACH_PTR(pins, pin) {
-		if (pin->port == NULL) {
+		if (pin->port == NULL || IS_RADIO_CHANNEL(pin - pins)) {
 			continue;
 		}
 		if (!gpio_is_ready_dt(pin)) {

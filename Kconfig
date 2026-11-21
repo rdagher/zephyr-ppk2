@@ -8,3 +8,19 @@ config PPK2_TRACE
 	  a PPK2, to tell which code a current was drawn by. The pins come
 	  from the zephyr,user devicetree properties ppk2-d0-gpios to
 	  ppk2-d7-gpios. When disabled, the markers compile to nothing.
+
+config PPK2_TRACE_RADIO
+	bool "A channel that is high while the radio is on"
+	depends on PPK2_TRACE && MPSL && SOC_COMPATIBLE_NRF54LX
+	select NRFX_GPIOTE
+	select NRFX_GPPI
+	help
+	  The hardware raises the channel when the radio is ready and drops
+	  it when the radio is disabled. No code runs for it. The channel is
+	  claimed under the name "radio". nRF54L series with MPSL only.
+
+config PPK2_TRACE_RADIO_CHANNEL
+	int "The radio channel"
+	depends on PPK2_TRACE_RADIO
+	range 0 7
+	default 0

@@ -77,6 +77,10 @@ jobs:
           - board: nrf54lm20dk/nrf54lm20b/cpuapp
             sample: wrap_profiling
             trace: n
+          # The radio channel exists on the nRF54L series only.
+          - board: nrf54lm20dk/nrf54lm20b/cpuapp
+            sample: ble_advertising
+            trace: y
     steps:
       - uses: actions/checkout@v4
 

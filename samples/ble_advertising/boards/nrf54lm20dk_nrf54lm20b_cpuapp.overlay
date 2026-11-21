@@ -1,0 +1,7 @@
+/* SPDX-License-Identifier: Apache-2.0 OR MIT */
+/ {
+	zephyr,user {
+		ppk2-d0-gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+		ppk2-d1-gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+	};
+};

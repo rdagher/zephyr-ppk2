@@ -1,0 +1,9 @@
+sample:
+  name: PPK2 markers on a BLE advertiser
+  description: Radio activity on D0 by hardware, a sensor read on D1
+tests:
+  sample.ppk2.ble_advertising:
+    platform_allow:
+      - nrf54lm20dk/nrf54lm20b/cpuapp
+    tags: ppk2 power bluetooth
+    build_only: true

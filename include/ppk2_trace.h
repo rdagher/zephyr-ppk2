@@ -42,7 +42,8 @@ void ppk2_trace_set(int ch, bool on);
  * where `west ppk2 attribute` reads it. Fails to build when the channel
  * is not wired, and fails to link when two C files claim the same one.
  */
-#define PPK2_TRACE_CLAIM(ch, name)                                                                 \
+#define PPK2_TRACE_CLAIM(ch, name) PPK2_TRACE_CLAIM_(ch, name)
+#define PPK2_TRACE_CLAIM_(ch, name)                                                                \
 	BUILD_ASSERT(DT_NODE_HAS_PROP(DT_PATH(zephyr_user), ppk2_d##ch##_gpios),                   \
 		     "channel " #ch " is not wired in the devicetree");                            \
 	BUILD_ASSERT(sizeof(#name) <= 15, "channel name " #name " is longer than 14 characters");  \
