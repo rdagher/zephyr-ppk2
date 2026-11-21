@@ -93,14 +93,15 @@ def idle(rows: list[Row]) -> list[float]:
 
 def report_line(label: str, found: list[Region], vdd_v: float | None) -> str:
     """One line of the report for one channel."""
-    charge = statistics.fmean(r.charge_uc for r in found)
-    spread = statistics.stdev(r.charge_uc for r in found) if len(found) > 1 else 0.0
+    charges = [r.charge_uc for r in found]
+    charge = statistics.fmean(charges)
+    spread = statistics.stdev(charges) if len(found) > 1 else 0.0
     line = (
         f"{label:<22} n={len(found):<5} "
         f"width {statistics.fmean(r.duration_s for r in found) * 1000:9.3f} ms  "
         f"avg {statistics.fmean(r.mean_ua for r in found):9.2f} µA  "
         f"peak {max(r.peak_ua for r in found):8.0f} µA  "
-        f"charge {charge:9.3f} ± {spread:.3f} µC"
+        f"charge {charge:9.3f} ± {spread:.3f} µC (median {statistics.median(charges):.3f})"
     )
     if vdd_v is not None:
         line += f"  energy {charge * vdd_v:9.3f} µJ"

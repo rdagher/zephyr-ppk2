@@ -139,13 +139,13 @@ west ppk2 plot trace.csv --window 5.3 5.8 --out ble.png # the figure
 
 ```text
 capture: 999532 samples, 10.00 s powered
-D0 radio               n=270   width     0.198 ms  avg   4799.91 µA  peak    10343 µA  charge     0.951 ± 0.031 µC
-D1 sensor              n=9     width     5.040 ms  avg   1371.88 µA  peak     2493 µA  charge     6.914 ± 0.021 µC
+D0 radio               n=270   width     0.198 ms  avg   4799.91 µA  peak    10343 µA  charge     0.951 ± 0.031 µC (median 0.954)
+D1 sensor              n=9     width     5.040 ms  avg   1371.88 µA  peak     2493 µA  charge     6.914 ± 0.021 µC (median 6.913)
 idle (no channel high) median      1.35 µA  mean     26.96 µA
 ```
 
 A region is a stretch where a channel is high. The charge is given as
-the mean ± the standard deviation over the regions. `--vdd 3.3` adds an
+the mean ± the standard deviation over the regions, then the median. `--vdd 3.3` adds an
 energy column, the charge times that voltage.
 
 `plot` draws the figure at the top of this page from the same capture.
@@ -199,6 +199,13 @@ commands above.
 - Eight channels, one region per channel at a time.
 - A marker written by code costs that code a GPIO write at each end,
   a few microseconds.
+- When a DUT wakes from sleep, the PPK2 switches range and can report
+  a few hundred mA for 20 to 30 µs. A region that contains a wake-up can
+  therefore read too high, and so can the mean of a whole capture. The
+  report gives the median of the charge next to its mean: when the two
+  differ, look for this. The
+  [Principle](https://github.com/rdagher/ppk2-lib/blob/main/docs/measure/principle.md)
+  page of ppk2-lib has the measurements.
 
 ## License
 
