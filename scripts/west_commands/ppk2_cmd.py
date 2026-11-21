@@ -48,11 +48,18 @@ class Ppk2(WestCommand):
                 self.die('ppk2 not found: pip install "git+https://github.com/rdagher/ppk2-lib"')
             sys.exit(subprocess.call([cli, args.sub, *rest]))
 
+        # --build-dir is accepted after the sub-command too, where the
+        # parser above leaves it among the arguments of the script.
+        late = argparse.ArgumentParser(add_help=False)
+        late.add_argument("--build-dir", default=args.build_dir)
+        found, rest = late.parse_known_args(rest)
+        build_dir = found.build_dir
+
         names = []
         if args.sub != "budget":
-            elves = sorted(Path(args.build_dir).glob("**/zephyr/zephyr.elf"))
+            elves = sorted(Path(build_dir).glob("**/zephyr/zephyr.elf"))
             if not elves:
-                self.die(f"no zephyr.elf under {args.build_dir}: pass --build-dir")
+                self.die(f"no zephyr.elf under {build_dir}: pass --build-dir")
             # A sysbuild tree holds several images: take the one with claims.
             found = next(filter(None, map(channel_names, elves)), {})
             names = [f"--name={ch}={label}" for ch, label in sorted(found.items())]
