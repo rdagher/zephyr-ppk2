@@ -200,12 +200,12 @@ commands above.
 - A marker written by code costs that code a GPIO write at each end,
   a few microseconds.
 - When a DUT wakes from sleep, the PPK2 switches range and can report
-  a few hundred mA for 20 to 30 µs. A region that contains a wake-up can
-  therefore read too high, and so can the mean of a whole capture. The
-  report gives the median of the charge next to its mean: when the two
-  differ, look for this. The
-  [Principle](https://github.com/rdagher/ppk2-lib/blob/main/docs/measure/principle.md)
-  page of ppk2-lib has the measurements.
+  a few hundred mA for 20 to 30 µs that the DUT did not draw. A region
+  that contains a wake-up can therefore read too high, and so can the
+  mean of a whole capture. The report gives the median of the charge
+  next to its mean: when the two differ, trust the median.
+  [`evidence/`](evidence/README.md) has the measurement, and a way
+  around it: a constant load of about 1 mA.
 
 ## License
 
