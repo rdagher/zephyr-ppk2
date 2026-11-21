@@ -69,3 +69,30 @@ D1 is the sensor read, a 5 ms busy wait marked in the source.
 
 There are three radio pulses per advertising event, one per advertising
 channel, and an event about every 100 ms.
+
+### A regression caught
+
+With the budgets below, the sample passes:
+
+```sh
+west ppk2 budget trace.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
+```
+
+```text
+PASS region charge 6.91 µC (budget 8.00 µC)
+PASS region width 5.04 ms (budget 6.00 ms)
+PASS idle median 1.35 µA (budget 2.00 µA)
+```
+
+Make the sensor read three times longer, `k_busy_wait(15000)` in
+`read_sensor`, then build, flash and capture again. The same command
+exits 1:
+
+```text
+FAIL region charge 21.41 µC (budget 8.00 µC)
+FAIL region width 15.13 ms (budget 6.00 ms)
+PASS idle median 1.35 µA (budget 2.00 µA)
+```
+
+The radio and the idle current are unchanged, so the report points at
+the sensor read alone.

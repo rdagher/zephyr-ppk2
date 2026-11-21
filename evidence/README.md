@@ -15,6 +15,7 @@ The captures behind the figures of [samples](../docs/samples.md).
 | `profiling.csv.xz` | `samples/profiling` |
 | `wrap_profiling.csv.xz` | `samples/wrap_profiling` |
 | `ble_advertising.csv.xz` | `samples/ble_advertising` |
+| `ble_advertising_regressed.csv.xz` | The same with `k_busy_wait(15000)` in `read_sensor` |
 
 ## Reproducing the figures
 
@@ -22,6 +23,8 @@ The captures behind the figures of [samples](../docs/samples.md).
 python scripts/attribute.py evidence/profiling.csv.xz \
     --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit
 python scripts/attribute.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor
+python scripts/check_budget.py evidence/ble_advertising_regressed.csv.xz --channel 1 \
+    --max-uc 8 --max-ms 6 --idle-max-ua 2
 just plots
 ```
 

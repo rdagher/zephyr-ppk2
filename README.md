@@ -172,6 +172,14 @@ PASS idle median 1.35 µA (budget 2.00 µA)
 The budgets are `--max-ua`, `--max-peak-ua`, `--max-uc`, `--max-ms`,
 `--idle-max-ua`, and `--max-uj` with `--vdd`.
 
+## Coding assistants
+
+[`.claude/skills/ppk2-profile/SKILL.md`](.claude/skills/ppk2-profile/SKILL.md)
+is a procedure an AI coding assistant can follow to find which code
+draws the current: measure, mark more where the cost is, change one
+thing, measure again, propose a budget. Every step is one of the
+commands above.
+
 ## Samples
 
 | Sample | Shows |

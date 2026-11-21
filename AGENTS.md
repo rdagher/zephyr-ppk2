@@ -1,0 +1,11 @@
+# For coding agents
+
+- `README.md` is the interface of the module, `docs/` the bench and the
+  samples.
+- `.claude/skills/ppk2-profile/SKILL.md` is the procedure for finding
+  which code draws the current.
+- `uvx ruff check scripts` and `uvx ruff format --check scripts` must
+  pass. `just build-all` builds every sample; it needs the nRF Connect
+  SDK toolchain.
+- Flashing and capturing use the hardware on the bench. Do not do
+  either unless asked.
