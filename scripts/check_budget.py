@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Fail (exit 1) when a capture exceeds its energy, width, current or idle budgets.
+"""Fail (exit 1) when a capture exceeds its current, charge, width or idle budgets.
 
 CI gate on top of attribute.py's region logic:
 
-    python check_budget.py trace.csv --vdd 3.3 --channel 0 \\
-        --workload-max-uj 2300 --workload-max-ms 1025 --idle-max-ua 5.2
+    python check_budget.py trace.csv --channel 0 \\
+        --workload-max-uc 700 --workload-max-ms 1025 --idle-max-ua 5.2
+
+An energy budget (``--workload-max-uj``) needs ``--vdd``: the energy is
+the charge times that voltage.
 """
 
 import argparse
@@ -24,8 +27,10 @@ from attribute import (
 def main() -> int:
     """Evaluate the budgets against the capture; return the exit code."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    ap.add_argument("csv_path", help="GUI-parity capture CSV")
-    ap.add_argument("--vdd", type=float, default=3.0, help="DUT VDD in volts (default 3.0)")
+    ap.add_argument("csv_path", help="a capture in the app's CSV format")
+    ap.add_argument(
+        "--vdd", type=float, help="supply voltage in volts, needed by --workload-max-uj"
+    )
     ap.add_argument(
         "--channel",
         type=int,
@@ -34,7 +39,12 @@ def main() -> int:
         default=0,
         help="workload marker channel (default 0)",
     )
-    ap.add_argument("--workload-max-uj", type=float, help="max mean workload energy in µJ")
+    ap.add_argument("--workload-max-uc", type=float, help="max mean workload charge in µC")
+    ap.add_argument(
+        "--workload-max-uj",
+        type=float,
+        help="max mean workload energy in µJ, as charge times --vdd",
+    )
     ap.add_argument("--workload-max-ms", type=float, help="max mean workload width in ms")
     ap.add_argument("--workload-max-ua", type=float, help="max mean workload current in µA")
     ap.add_argument("--workload-max-peak-ua", type=float, help="max peak workload current in µA")
@@ -47,7 +57,10 @@ def main() -> int:
     )
     args = ap.parse_args()
 
+    if args.workload_max_uj is not None and args.vdd is None:
+        ap.error("--workload-max-uj needs --vdd")
     budgets = (
+        args.workload_max_uc,
         args.workload_max_uj,
         args.workload_max_ms,
         args.workload_max_ua,
@@ -73,15 +86,27 @@ def main() -> int:
     idle_ua = [ua for t, ua, levels in rows if t > boot_end_ms and not levels]
 
     failed = False
+    if args.workload_max_uc is not None:
+        if not workloads:
+            print("FAIL no workloads on the channel — cannot check charge budget")
+            failed = True
+        else:
+            mean_uc = statistics.fmean(p.charge_uc for p in workloads)
+            ok = mean_uc <= args.workload_max_uc
+            print(
+                f"{'PASS' if ok else 'FAIL'} workload charge "
+                f"{mean_uc:.1f} µC (budget {args.workload_max_uc:.1f} µC, n={len(workloads)})"
+            )
+            failed |= not ok
     if args.workload_max_uj is not None:
         if not workloads:
-            print("FAIL no workloads on the channel — cannot check workload budget")
+            print("FAIL no workloads on the channel — cannot check energy budget")
             failed = True
         else:
             mean_uj = statistics.fmean(p.energy_uj(args.vdd) for p in workloads)
             ok = mean_uj <= args.workload_max_uj
             print(
-                f"{'PASS' if ok else 'FAIL'} workload mean "
+                f"{'PASS' if ok else 'FAIL'} workload energy "
                 f"{mean_uj:.1f} µJ (budget {args.workload_max_uj:.1f} µJ, n={len(workloads)})"
             )
             failed |= not ok

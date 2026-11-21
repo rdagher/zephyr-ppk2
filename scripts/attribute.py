@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
-"""Attribute captured time, current, and energy to trace markers.
+"""Attribute captured time, current and charge to trace markers.
 
-Reads a GUI-parity CSV (from ``ppk2 capture`` or a Nordic GUI export)
-and reports, per marker channel D0..D7: region count, energy
-(mean ± std µJ), width (ms), mean and peak current (µA). Energy per
-region is the charge integral times VDD — each row is one 10 µs sample.
+Reads a capture in the CSV format of Nordic's Power Profiler app, from
+``ppk2 capture`` or exported from the app, plain or compressed (``.gz``,
+``.xz``). Reports, per marker channel D0..D7: the number of regions,
+their width (ms), their mean and peak current (µA) and their charge
+(µC, mean ± standard deviation over the regions).
+
+The charge of a region is the integral of its current: each row is one
+10 µs sample. The PPK2 measures current only. With ``--vdd`` an energy
+is added, as charge times that voltage: an estimate that holds as far
+as the supply voltage is constant.
 
 Pulses shorter than 5 ms count as sync bursts, not regions. Samples
 with no marker high are the idle floor. Stdlib only.
 
 Usage:
-    python attribute.py trace.csv --vdd 3.3 --name 0=cycle --name 1=wakeup
+    python attribute.py trace.csv --name 0=cycle --name 1=wakeup
+    python attribute.py trace.csv --vdd 3.3
 """
 
 import argparse
 import csv
 import gzip
+import lzma
 import statistics
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,7 +55,7 @@ class Pulse:
 def load_rows(path: Path) -> list[tuple[float, float, int]]:
     """CSV -> one (t_ms, current_µA, D0..D7 bitmask) tuple per sample."""
     rows: list[tuple[float, float, int]] = []
-    opener = gzip.open if path.suffix == ".gz" else open
+    opener = {".gz": gzip.open, ".xz": lzma.open}.get(path.suffix, open)
     with opener(path, "rt", newline="") as f:
         for rec in csv.DictReader(f):
             levels = 0
@@ -113,28 +121,38 @@ def first_region_start_ms(rows: list[tuple[float, float, int]]) -> float:
     return min(starts, default=0.0)
 
 
-def stats_line(name: str, pulses: list[Pulse], vdd_v: float) -> str:
-    """One report row: count, energy mean ± std, mean width, avg and peak current."""
-    energies = [p.energy_uj(vdd_v) for p in pulses]
+def stats_line(name: str, pulses: list[Pulse], vdd_v: float | None) -> str:
+    """One report row: count, width, mean and peak current, charge mean ± std.
+
+    With ``vdd_v``, the energy that charge makes at that voltage is appended.
+    """
+    charges = [p.charge_uc for p in pulses]
     durations = [p.duration_s * 1000.0 for p in pulses]
     currents = [p.mean_current_ua() for p in pulses]
     peak = max(p.peak_ua for p in pulses)
-    mean_e = statistics.fmean(energies)
-    sd_e = statistics.stdev(energies) if len(energies) > 1 else 0.0
-    return (
+    mean_q = statistics.fmean(charges)
+    sd_q = statistics.stdev(charges) if len(charges) > 1 else 0.0
+    line = (
         f"{name:<22} n={len(pulses):<4} "
-        f"energy {mean_e:9.2f} ± {sd_e:6.2f} µJ  "
         f"width {statistics.fmean(durations):8.2f} ms  "
         f"avg {statistics.fmean(currents):8.2f} µA  "
-        f"peak {peak:7.0f} µA"
+        f"peak {peak:7.0f} µA  "
+        f"charge {mean_q:9.2f} ± {sd_q:6.2f} µC"
     )
+    if vdd_v is not None:
+        line += f"  energy {mean_q * vdd_v:9.2f} µJ"
+    return line
 
 
 def main() -> None:
     """Parse the CSV, split pulses per channel, print the report."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    ap.add_argument("csv_path", help="GUI-parity capture CSV")
-    ap.add_argument("--vdd", type=float, default=3.0, help="DUT VDD in volts (default 3.0)")
+    ap.add_argument("csv_path", help="a capture in the app's CSV format")
+    ap.add_argument(
+        "--vdd",
+        type=float,
+        help="supply voltage in volts: adds an energy column, charge times this voltage",
+    )
     ap.add_argument(
         "--name",
         action="append",
@@ -188,7 +206,9 @@ def main() -> None:
     boot_end_ms = first_region_start_ms(rows)
     idle_ua = [ua for t, ua, levels in rows if t > boot_end_ms and not levels]
 
-    print(f"capture: {len(rows)} samples, {total_s:.2f} s, VDD {args.vdd:.2f} V")
+    print(f"capture: {len(rows)} samples, {total_s:.2f} s")
+    if args.vdd is not None:
+        print(f"energy: charge times {args.vdd:.2f} V, taken as constant")
     for ch in sorted(set(sync) | set(regions)):
         label = f"D{ch} {names.get(ch, '')}".rstrip()
         if ch in sync:

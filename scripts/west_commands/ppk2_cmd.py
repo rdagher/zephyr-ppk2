@@ -47,8 +47,7 @@ class Ppk2(WestCommand):
             cli = which("ppk2")
             if cli is None:
                 self.die(
-                    "ppk2 CLI not found — pip install "
-                    '"git+https://github.com/rdagher/ppk2-lib"'
+                    'ppk2 CLI not found — pip install "git+https://github.com/rdagher/ppk2-lib"'
                 )
             sys.exit(subprocess.call([cli, args.sub, *tail]))
         self._attribute(tail)
