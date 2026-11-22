@@ -34,23 +34,32 @@ interface; this file is the procedure.
    `attribute` reads the channel names from `build/`; pass
    `--build-dir` when the build is elsewhere.
 
-2. Read the report. Charge is what a battery pays: a short region at a
-   high current can cost less than a long one at a low current. Compare
-   the charge of the marked regions per second with the idle current.
+2. Read the report. Compare the charge of one complete region, in µC:
+   a short region at a high current can cost less than a long one at a
+   low current. A region includes the regions marked inside it, so do
+   not add the rows up. Then compare the charge of the marked regions
+   per second with the idle current.
 3. If the largest cost is not inside a marked region, mark more, as in
-   the table below. Each new channel needs a `PPK2_TRACE_CLAIM` and a
-   wired pin.
+   the table below. Each new channel needs a wired pin. A channel used
+   with `PPK2_TRACE_SCOPE` or `ppk2_trace_set` also needs a
+   `PPK2_TRACE_CLAIM`. `PPK2_TRACE_WRAP` and the radio option claim
+   theirs themselves: a second claim does not build.
 4. Change one thing, then build, flash and capture again to `after.csv`
    with the same options and duration.
 5. Compare the two reports channel by channel. Two captures of the same
    firmware differ by about 0.1 % on a region that contains no wake-up
-   from sleep, and by a few percent on a short region that does: there,
-   compare the median of the charge, which the report prints.
+   from sleep. On a short region that contains one they differ by a few
+   percent: there, compare the median of the charge, which the report
+   prints.
 6. To keep the gain, propose a budget for CI:
 
    ```sh
    west ppk2 budget after.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
    ```
+
+   These budgets are on the mean over the regions, and on the median
+   for the idle current. Leave room above the measured mean for the
+   regions that contain a wake-up.
 
 ## Ways to mark
 
