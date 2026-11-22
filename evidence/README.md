@@ -2,7 +2,7 @@
 
 The captures behind the figures of [samples](../docs/samples.md). They
 weigh 40 MB, so they are kept on the branch `captures` of this
-repository, at commit `ecfae61`, and a west workspace that takes the
+repository, at commit `cfb61d2`, and a west workspace that takes the
 module does not download them. To put them in this folder:
 
 ```sh
@@ -21,7 +21,7 @@ git archive FETCH_HEAD '*.csv.xz' | tar -x -C evidence
 | Date | 2026-11-21 |
 | DUT | nRF54LM20 DK, each sample built from this repository with nRF Connect SDK v3.3.1 |
 | PPK2 | Source meter mode at 3.3 V, firmware 1.2.4 |
-| Capture | `ppk2 capture` of ppk2-lib at commit `35a6c10`, 60 s from power-on, between 22:50 and 22:57 |
+| Capture | `ppk2 capture` of ppk2-lib at commit `17bcec2`, 60 s from power-on, between 22:50 and 22:57 |
 | Markers | D0 to D3 on P1.12 to P1.15 |
 
 | File | Sample |
