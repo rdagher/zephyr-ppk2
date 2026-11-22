@@ -76,10 +76,11 @@ same bench without touching it. The files are under `app/`.
 | `app/ble_advertising_app.csv.xz` | The app | 11:20:00 | 30 s |
 | `app/ble_advertising_ppk2_2.csv.xz` | `ppk2 capture` | 11:21:07 | 60 s |
 
-`ppk2 capture` was that of ppk2-lib at commit `0e262fc`. The app was in
-the configuration it starts with: every gain at 1, spike filter with 3
-samples to smooth and coefficients 0.18 and 0.06, all eight digital
-channels shown. Its captures were exported as CSV with the timestamp,
+`ppk2 capture` was that of ppk2-lib at commit `0e262fc`. The app was
+Power Profiler 4.4.1 in nRF Connect for Desktop 5.4.1, in the
+configuration it starts with. That is every gain at 1, a spike filter
+with 3 samples to smooth and coefficients 0.18 and 0.06, and all eight
+digital channels shown. Its captures were exported as CSV with the timestamp,
 the current and the digital inputs, and start about 0.7 s before the
 power is switched on.
 
