@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 OR MIT
-"""Exit 1 when the regions of one channel, or the idle current, exceed a budget.
+"""Exit 1 when the mean over the regions of a channel, or the idle current, exceeds a budget.
 
     python check_budget.py trace.csv --channel 0 --max-uc 700 --max-ms 1025 --idle-max-ua 5.2
 
@@ -39,11 +39,16 @@ def main() -> int:
     mean = statistics.fmean
     # (budget, what it limits, unit, the measured value)
     checks = (
-        (args.max_ua, "region current", "µA", lambda: mean(r.mean_ua for r in found)),
-        (args.max_peak_ua, "region peak", "µA", lambda: max(r.peak_ua for r in found)),
-        (args.max_uc, "region charge", "µC", lambda: mean(r.charge_uc for r in found)),
-        (args.max_ms, "region width", "ms", lambda: mean(r.duration_s for r in found) * 1000),
-        (args.max_uj, "region energy", "µJ", lambda: mean(r.charge_uc for r in found) * args.vdd),
+        (args.max_ua, "mean region current", "µA", lambda: mean(r.mean_ua for r in found)),
+        (args.max_peak_ua, "highest region peak", "µA", lambda: max(r.peak_ua for r in found)),
+        (args.max_uc, "mean region charge", "µC", lambda: mean(r.charge_uc for r in found)),
+        (args.max_ms, "mean region width", "ms", lambda: mean(r.duration_s for r in found) * 1000),
+        (
+            args.max_uj,
+            "mean region energy",
+            "µJ",
+            lambda: mean(r.charge_uc for r in found) * args.vdd,
+        ),
         (args.idle_max_ua, "idle median", "µA", lambda: statistics.median(idle_ua)),
     )
     if all(budget is None for budget, *_ in checks):

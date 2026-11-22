@@ -110,22 +110,25 @@ def main() -> None:
         ]
         for ch, items in found.items()
     ]
-    drawn = table.table(
-        cells,
-        loc="center",
-        cellLoc="right",
-        colLoc="right",
-        edges="horizontal",
-        colLabels=["channel", "regions", "width", "mean current", "peak", "charge"],
-    )
-    drawn.auto_set_font_size(False)
-    drawn.set_fontsize(10)
-    drawn.scale(1, 1.35)
-    for (row, col), cell in drawn.get_celld().items():
-        cell.set_edgecolor(GRID)
-        cell.get_text().set_color(MUTED if row == 0 else INK)
-        if col == 0:
-            cell.get_text().set_ha("left")
+    if not cells:
+        table.text(0.5, 0.5, "no marked region in this capture", ha="center", color=MUTED)
+    else:
+        drawn = table.table(
+            cells,
+            loc="center",
+            cellLoc="right",
+            colLoc="right",
+            edges="horizontal",
+            colLabels=["channel", "regions", "width", "mean current", "peak", "charge"],
+        )
+        drawn.auto_set_font_size(False)
+        drawn.set_fontsize(10)
+        drawn.scale(1, 1.35)
+        for (row, col), cell in drawn.get_celld().items():
+            cell.set_edgecolor(GRID)
+            cell.get_text().set_color(MUTED if row == 0 else INK)
+            if col == 0:
+                cell.get_text().set_ha("left")
 
     fig.savefig(args.out, dpi=150, facecolor=SURFACE, bbox_inches="tight")
     print(f"wrote {args.out}")

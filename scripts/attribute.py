@@ -4,7 +4,8 @@
 
 Reads a capture in the CSV format of Nordic's Power Profiler app, from
 ``ppk2 capture`` or exported from the app, plain or compressed (``.gz``,
-``.xz``). A region is a stretch where a channel is high.
+``.xz``), at 100,000 samples per second: an export at a lower rate is
+refused. A region is a stretch where a channel is high.
 
 The charge of a region is the integral of its current: each row is one
 10 µs sample. The PPK2 measures current only. With ``--vdd`` an energy
@@ -46,10 +47,10 @@ class Region:
 
 
 def load_rows(path: Path) -> list[Row]:
-    """Read a capture."""
+    """Read a capture. Exits when its rows are not 10 µs apart."""
     opener = {".gz": gzip.open, ".xz": lzma.open}.get(path.suffix, open)
     with opener(path, "rt", newline="") as f:
-        return [
+        rows = [
             (
                 float(rec["Timestamp(ms)"]),
                 float(rec["Current(uA)"]),
@@ -57,11 +58,29 @@ def load_rows(path: Path) -> list[Row]:
             )
             for rec in csv.DictReader(f)
         ]
+    if len(rows) > 1:
+        # The charge counts 10 µs per row, so any other rate would give a wrong one.
+        step_s = (rows[-1][0] - rows[0][0]) / 1000.0 / (len(rows) - 1)
+        if abs(step_s - SAMPLE_PERIOD_S) > 0.01 * SAMPLE_PERIOD_S:
+            raise SystemExit(
+                f"error: {path}: rows are {step_s * 1e6:.1f} µs apart on average, not 10: "
+                "a capture at 100,000 samples per second is needed"
+            )
+    return rows
 
 
 def powered(rows: list[Row], threshold_ua: float = POWER_ON_UA) -> list[Row]:
-    """The rows from power-on. Before it the digital inputs float and mean nothing."""
-    start = next((i for i, row in enumerate(rows) if row[1] > threshold_ua), 0)
+    """The rows from power-on. Before it the digital inputs float and mean nothing.
+
+    Exits when no sample is above the threshold: nothing in such a
+    capture can be told apart from an unpowered DUT.
+    """
+    start = next((i for i, row in enumerate(rows) if row[1] > threshold_ua), None)
+    if start is None:
+        raise SystemExit(
+            f"error: no sample above {threshold_ua:g} µA: the DUT was not powered. "
+            "For a DUT that draws less, pass --power-on-ua"
+        )
     return rows[start:]
 
 
@@ -86,8 +105,11 @@ def regions(rows: list[Row], channel: int) -> list[Region]:
 
 
 def idle(rows: list[Row]) -> list[float]:
-    """The currents with no channel high, from the first region on."""
-    first = next((i for i, row in enumerate(rows) if row[2]), len(rows))
+    """The currents with no channel high, from the first region on.
+
+    When no channel is ever high, all of them.
+    """
+    first = next((i for i, row in enumerate(rows) if row[2]), 0)
     return [ua for _, ua, levels in rows[first:] if not levels]
 
 
@@ -136,8 +158,6 @@ def main() -> None:
         names[int(ch)] = label
 
     rows = powered(load_rows(args.csv_path), args.power_on_ua)
-    if not rows:
-        raise SystemExit("empty capture")
 
     print(f"capture: {len(rows)} samples, {(rows[-1][0] - rows[0][0]) / 1000.0:.2f} s powered")
     if args.vdd is not None:
