@@ -51,6 +51,12 @@ void ppk2_trace_set(int ch, bool on);
 	STRUCT_SECTION_ITERABLE(ppk2_trace_channel, ppk2_trace_channel_d##ch) = {(ch), #name};     \
 	enum { ppk2_ch_##name = (ch) }
 
+static inline int ppk2_trace_raise_(int ch)
+{
+	ppk2_trace_set(ch, true);
+	return ch;
+}
+
 static inline void ppk2_trace_drop_(const int *ch)
 {
 	ppk2_trace_set(*ch, false);
@@ -65,7 +71,7 @@ static inline void ppk2_trace_drop_(const int *ch)
 #define PPK2_TRACE_SCOPE(ch)                                                                       \
 	__attribute__((cleanup(ppk2_trace_drop_), unused)) const int CONCAT(ppk2_scope_,           \
 									    __COUNTER__) =         \
-		(ppk2_trace_set((ch), true), (ch))
+		ppk2_trace_raise_(ch)
 
 /**
  * Mark function @p fn on channel @p ch without touching its source.
