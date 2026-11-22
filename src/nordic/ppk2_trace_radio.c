@@ -1,7 +1,8 @@
 /*
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
- * The radio channel: high while the radio is on, with no code running.
+ * The radio channel: high from the radio's READY event to its DISABLED
+ * event, with no code running. The ramp-up before READY is not in it.
  * MPSL publishes the radio's READY and DISABLED events on two DPPI
  * channels; a GPIOTE task on the pin subscribes to them.
  *
@@ -62,7 +63,9 @@ static int ppk2_trace_radio_init(void)
 		if (nrfx_gppi_ext_conn_alloc(radio, gpio, &handle, &source) < 0) {
 			return -ENOMEM;
 		}
-		nrfx_gppi_ep_attach(link->task, handle);
+		if (nrfx_gppi_ep_attach(link->task, handle) < 0) {
+			return -EIO;
+		}
 		nrfx_gppi_conn_enable(handle);
 	}
 	nrfx_gpiote_out_task_enable(gpiote, RADIO_PIN);
