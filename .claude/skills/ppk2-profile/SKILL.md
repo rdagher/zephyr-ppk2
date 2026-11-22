@@ -7,8 +7,8 @@ description: Find which code draws the current in a Zephyr application, with a P
 
 The module marks code with GPIO pins that the PPK2 samples next to the
 current. A report then gives, per channel, the width, the mean and peak
-current and the charge of the marked regions. `README.md` has the
-interface; this file is the procedure.
+current and the charge of the marked regions. The interface is described in
+`docs/marking.md` and `docs/commands.md`; this file is the procedure.
 
 ## Preparation
 

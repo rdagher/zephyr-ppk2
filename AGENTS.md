@@ -1,7 +1,8 @@
 # For coding agents
 
-- `README.md` is the interface of the module, `docs/` the bench and the
-  samples.
+- `README.md` is the overview and the setup of the module. The interface
+  (`marking.md`, `commands.md`), the limitations, the bench and the
+  samples are described in `docs/`.
 - `.claude/skills/ppk2-profile/SKILL.md` is the procedure for finding
   which code draws the current.
 - `uvx ruff check scripts` and `uvx ruff format --check scripts` must
