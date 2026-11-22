@@ -2,7 +2,7 @@
 
 Three applications, each with its markers. The figures below were
 measured on 2026-11-21 on an nRF54LM20 DK, with the PPK2 in Source
-meter mode at 3.3 V. The captures are in [`evidence/`](../evidence/README.md).
+meter mode at 3.3 V. [`evidence/`](../evidence/README.md) says where the captures are.
 
 ## Running a sample
 

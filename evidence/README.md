@@ -1,6 +1,20 @@
 # Evidence
 
-The captures behind the figures of [samples](../docs/samples.md).
+The captures behind the figures of [samples](../docs/samples.md). They
+weigh 40 MB, so they are kept on the branch `captures` of this
+repository, at commit `ecfae61`, and a west workspace that takes the
+module does not download them. To put them in this folder:
+
+```sh
+just captures
+```
+
+or, without just:
+
+```sh
+git fetch origin captures
+git archive FETCH_HEAD '*.csv.xz' | tar -x -C evidence
+```
 
 | | |
 |---|---|

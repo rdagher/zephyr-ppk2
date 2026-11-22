@@ -1,4 +1,5 @@
 build/
 __pycache__/
 *.csv
+/evidence/*.csv.xz
 .DS_Store

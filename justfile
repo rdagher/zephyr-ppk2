@@ -32,6 +32,11 @@ build-all:
     @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}"; just build $s "{{BOARD_52840}}"; done
     @just build ble_advertising "{{BOARD_54LM20}}"
 
+# Put the captures of the branch `captures` in evidence/ (40 MB).
+captures:
+    git rev-parse -q --verify refs/heads/captures >/dev/null || git fetch origin captures:captures
+    git archive refs/heads/captures '*.csv.xz' | tar -x -C evidence
+
 # Redraw the figures of the documentation from the captures in evidence/.
 plots:
     uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/profiling.csv.xz --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit --window 8.75 10.15 --title "One cycle of samples/profiling on an nRF54LM20 DK" --out docs/img/profiling.png
