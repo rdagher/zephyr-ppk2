@@ -38,6 +38,14 @@ current of the whole device under test (DUT) while each pin is high: an
 interrupt or a radio event that falls inside a marked region is counted
 in it.
 
+![The parts of the solution. A developer, a CI job or an AI coding assistant run the west ppk2 commands on the host, and ppk2-lib drives the PPK2 over USB. The PPK2 measures the current of the DUT and samples the markers of its application. zephyr.elf is built, flashed, and read back for the names of the regions. Beside them, the plot and the report of one cycle](docs/img/architecture.png)
+
+The firmware is built with the markers and the names of their regions
+linked in. It is flashed to the DUT, and the host reads the names back
+from `zephyr.elf` for the report. The `west ppk2` commands drive the
+PPK2 through ppk2-lib, whoever runs them: a developer, a CI job or an
+AI coding assistant.
+
 A marker costs one GPIO write at each end. The radio marker costs no
 CPU time: the hardware drives it. With `CONFIG_PPK2_TRACE=n` every
 marker compiles to nothing, and the code builds unchanged.
