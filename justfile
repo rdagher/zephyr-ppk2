@@ -12,6 +12,7 @@ BOARD_54LM20 := "nrf54lm20dk/nrf54lm20b/cpuapp"
 BOARD_52840  := "nrf52840dk/nrf52840"
 
 SAMPLES := "profiling wrap_profiling"
+CAPTURES := "3c98dc599f46165426216f9e0d5b9aabd95a40df"
 ROOT    := justfile_directory()
 
 # Show available recipes.
@@ -29,13 +30,16 @@ build sample="profiling" board=BOARD_54LM20:
 
 # Build every sample for the boards it supports.
 build-all:
-    @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}"; just build $s "{{BOARD_52840}}"; done
+    @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}" && just build $s "{{BOARD_52840}}" || exit 1; done
     @just build ble_advertising "{{BOARD_54LM20}}"
 
-# Put the captures of the branch `captures` in evidence/ (40 MB).
+# Put the captures in evidence/ (93 MB): the commit of the branch
+# `captures` that evidence/README.md names, fetched if it is not here.
 captures:
-    git rev-parse -q --verify refs/heads/captures >/dev/null || git fetch origin captures:captures
-    git archive refs/heads/captures '*.csv.xz' | tar -x -C evidence
+    git cat-file -e {{CAPTURES}}^{commit} 2>/dev/null || git fetch origin captures
+    git archive {{CAPTURES}} '*.csv.xz' > "{{ROOT}}/evidence/.captures.tar"
+    tar -x -C "{{ROOT}}/evidence" -f "{{ROOT}}/evidence/.captures.tar"
+    rm "{{ROOT}}/evidence/.captures.tar"
 
 # Redraw the figures of the documentation from the captures in evidence/.
 plots:

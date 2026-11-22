@@ -3,4 +3,5 @@ __pycache__/
 *.csv
 /evidence/*.csv.xz
 /evidence/app/
+/evidence/.captures.tar
 .DS_Store
