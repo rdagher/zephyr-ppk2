@@ -140,7 +140,7 @@ three captures of `ble_advertising`.
 
 The two tools agree within 0.2 % on the mean current, except on the
 sensor read. There the app lies between the two captures of
-`ppk2 capture`, which themselves differ by 2.7 %: some sensor reads
+`ppk2 capture`, which themselves differ by 2.7 %. Some sensor reads
 contain a [wake-up burst](../evidence/README.md#wake-up-bursts), in the
 app's capture as in the others, and it moves the mean. The medians of
 the charge agree within 0.3 %.
