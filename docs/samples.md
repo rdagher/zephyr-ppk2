@@ -33,7 +33,7 @@ inside the cycle. Each function starts with `PPK2_TRACE_SCOPE`.
 
 The 30 ms wait inside `measure` shows as a dip, and the 400 ms sleep as
 the flat stretch while D0 stays high. The spike to 100 mA where the
-cycle starts is a wake-up burst, not a current the DUT drew.
+cycle starts is a [wake-up burst](../evidence/README.md#wake-up-bursts).
 
 ## `wrap_profiling`
 
@@ -53,7 +53,13 @@ functions.
 The widths agree within 0.02 ms. The wrapped build reads 0.7 to 0.8 %
 lower in current on every channel, in this round and in an earlier one.
 That is more than two captures of one build differ by (0.05 % in
-ppk2-lib's validation), and its cause was not looked for: the two builds are different binaries.
+ppk2-lib's validation).
+
+On 2026-11-22 the two builds were alternated twice on the bench, 60 s
+each, in captures that are not kept. `transmit` read 1,408.42 and
+1,408.40 µA marked, and 1,398.12 and 1,397.79 µA wrapped. So the 0.7 %
+follows the build and repeats to 0.02 %. The two builds are different
+binaries; the cause inside them was not looked for.
 
 The charge is the mean ± the standard deviation over the regions. On
 `cycle` and `measure` the spread is ten times that of `transmit`: both
@@ -64,8 +70,9 @@ not moved by them.
 ## `ble_advertising`
 
 A BLE advertiser that reads a sensor once a second and puts the value
-in its advertising data. D0 is the radio channel, driven by hardware.
-D1 is the sensor read, a 5 ms busy wait marked in the source.
+in its advertising data. D0 is the radio channel, driven by hardware
+from the radio's READY event to DISABLED. D1 is the sensor read, a 5 ms
+busy wait marked in the source.
 
 | Channel | Regions | Width | Mean current | Charge | Median charge |
 |---|---|---|---|---|---|
@@ -76,7 +83,9 @@ D1 is the sensor read, a 5 ms busy wait marked in the source.
 ![The BLE sample around one sensor read](img/ble_advertising.png)
 
 There are three radio pulses per advertising event, one per advertising
-channel, and an event about every 100 ms. The last event of the figure
+channel, and an event about every 100 ms. The 0.967 µC is the charge
+inside one pulse: the radio's ramp-up before READY is not in it, so it
+is less than a transmission costs. The last event of the figure
 starts with a wake-up burst.
 
 ### A regression caught
@@ -88,8 +97,8 @@ west ppk2 budget trace.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
 ```
 
 ```text
-PASS region charge 7.04 µC (budget 8.00 µC)
-PASS region width 5.04 ms (budget 6.00 ms)
+PASS mean region charge 7.04 µC (budget 8.00 µC)
+PASS mean region width 5.04 ms (budget 6.00 ms)
 PASS idle median 1.31 µA (budget 2.00 µA)
 ```
 
@@ -98,8 +107,8 @@ Make the sensor read three times longer, `k_busy_wait(15000)` in
 exits 1:
 
 ```text
-FAIL region charge 21.45 µC (budget 8.00 µC)
-FAIL region width 15.13 ms (budget 6.00 ms)
+FAIL mean region charge 21.45 µC (budget 8.00 µC)
+FAIL mean region width 15.13 ms (budget 6.00 ms)
 PASS idle median 1.31 µA (budget 2.00 µA)
 ```
 

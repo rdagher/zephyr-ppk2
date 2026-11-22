@@ -1,9 +1,9 @@
 # Evidence
 
-The captures behind the figures of [samples](../docs/samples.md). They
-weigh 40 MB, so they are kept on the branch `captures` of this
-repository, at commit `3c98dc5`, and a west workspace that takes the
-module does not download them. To put them in this folder:
+The captures behind the figures of [samples](../docs/samples.md). The
+ten files weigh 93 MB, so they are kept on the branch `captures` of
+this repository, at commit `3c98dc5`, and a west workspace that takes
+the module does not download them. To put them in this folder:
 
 ```sh
 just captures
@@ -13,7 +13,7 @@ or, without just:
 
 ```sh
 git fetch origin captures
-git archive FETCH_HEAD '*.csv.xz' | tar -x -C evidence
+git archive 3c98dc599f46165426216f9e0d5b9aabd95a40df '*.csv.xz' | tar -x -C evidence
 ```
 
 | | |
@@ -107,15 +107,19 @@ from the image of a build.
 
 When a DUT wakes from sleep, the PPK2 switches range and reports a few
 hundred mA for 2 or 3 samples. Nordic's filter handles two. With a
-third, its output stays tens of mA too high for 40 µs. That happens at
-about a third of the wake-ups.
+third, its output stays at tens of mA for 40 µs. That happens at about
+a third of the wake-ups, in the app's captures as in those of
+`ppk2 capture`.
 
 A check made on 2026-11-21, whose captures are not kept: the BLE sample
 was captured with a constant load of 0.94 mA, which keeps the PPK2 out
 of its two lowest ranges. No sample leaked then, and an advertising
 event cost 4.01 ± 0.12 µC. Without the load it cost 5.34 ± 1.74 µC on
-average, with a median of 4.13 µC. So the leaked samples are not a
-current the DUT drew, and the median is the figure to trust.
+average, with a median of 4.13 µC. The load changed the transient and
+left the median where it was, which fits a reading produced by the
+range switch, as Nordic's own material describes it. It does not rule
+out a real inrush current. Either way the median is the figure to
+trust for a repeating event.
 
 ## Limits
 

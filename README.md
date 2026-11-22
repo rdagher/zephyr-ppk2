@@ -1,9 +1,9 @@
 # zephyr-ppk2
 
-A Zephyr module that tells which code a current was drawn by. It marks
-code with GPIO pins that a Nordic Power Profiler Kit II (PPK2) samples
-next to the current, and reports the width, the current and the charge
-of each marked region. The capture itself is taken by
+A Zephyr module that measures the current and the charge drawn while
+marked code runs. It marks code with GPIO pins that a Nordic Power
+Profiler Kit II (PPK2) samples next to the current, and reports the
+width, the current and the charge of each marked region. The capture itself is taken by
 [ppk2-lib](https://github.com/rdagher/ppk2-lib).
 
 This is an experimental release. The interface may still change.
@@ -46,7 +46,7 @@ static void read_sensor(void)
 | `PPK2_TRACE_SCOPE(ch)` | Holds the channel high to the end of the enclosing block, on every way out |
 | `ppk2_trace_set(ch, on)` | For a region that starts in one function and ends in another |
 | `PPK2_TRACE_WRAP(ch, ret, fn, params, args)` | Marks a function at link time, without touching its source |
-| `CONFIG_PPK2_TRACE_RADIO` | A channel the hardware holds high while the radio is on |
+| `CONFIG_PPK2_TRACE_RADIO` | A channel the hardware holds high from the radio's READY event to DISABLED |
 
 A claim fails to build when its channel is not wired in the
 devicetree, and two C files that claim the same channel fail to link.
@@ -77,8 +77,11 @@ CONFIG_PPK2_TRACE_RADIO=y
 CONFIG_PPK2_TRACE_RADIO_CHANNEL=0
 ```
 
-The radio's own events raise and drop the pin, through DPPI and GPIOTE.
-The channel is claimed under the name `radio`.
+The radio's own events raise and drop the pin, through DPPI and GPIOTE:
+READY raises it and DISABLED drops it. The ramp-up before READY is
+outside the marked region, so its charge is that of this window and not
+of the whole radio event. The channel is claimed under the name
+`radio`; do not claim it again.
 
 This is the one part of the module that is specific to a vendor. It is
 for Nordic's nRF54L series under the nRF Connect SDK, whose radio layer
@@ -152,16 +155,23 @@ idle (no channel high) median      1.31 µA  mean     25.55 µA
 ```
 
 A region is a stretch where a channel is high. The charge is given as
-the mean ± the standard deviation over the regions, then the median. `--vdd 3.3` adds an
-energy column, the charge times that voltage.
+the mean ± the standard deviation over the regions, then the median.
+`--vdd 3.3` adds an energy column, the charge times that voltage.
+
+The capture must be at 100,000 samples per second, as `ppk2 capture`
+writes it and as the app exports it at full rate. An export at a lower
+rate is refused, and so is a capture in which the current never rises
+above 200 µA, taken as a DUT that was not powered. `--power-on-ua`
+sets that threshold for a DUT that draws less.
 
 `plot` draws the figure at the top of this page from the same capture.
 It needs matplotlib and numpy in west's Python environment.
 
 ## Budget check
 
-`west ppk2 budget` exits 1 when the regions of a channel, or the idle
-current, exceed a budget. In a CI job on a runner wired to the bench:
+`west ppk2 budget` exits 1 when the mean over the regions of a channel,
+or the median idle current, exceeds a budget. It checks means: one
+region can be above the budget while the mean is below it. In a CI job on a runner wired to the bench:
 
 ```sh
 west build -b nrf54lm20dk/nrf54lm20b/cpuapp app
@@ -171,13 +181,15 @@ west ppk2 budget trace.csv --channel 1 --max-uc 8 --max-ms 6 --idle-max-ua 2
 ```
 
 ```text
-PASS region charge 7.04 µC (budget 8.00 µC)
-PASS region width 5.04 ms (budget 6.00 ms)
+PASS mean region charge 7.04 µC (budget 8.00 µC)
+PASS mean region width 5.04 ms (budget 6.00 ms)
 PASS idle median 1.31 µA (budget 2.00 µA)
 ```
 
-The budgets are `--max-ua`, `--max-peak-ua`, `--max-uc`, `--max-ms`,
-`--idle-max-ua`, and `--max-uj` with `--vdd`.
+The budgets are `--max-ua`, `--max-uc` and `--max-ms` on the mean
+current, charge and width of a region, `--max-peak-ua` on the highest
+sample of any region, `--idle-max-ua` on the median idle current, and
+`--max-uj` with `--vdd`.
 
 ## Coding assistants
 
@@ -210,12 +222,14 @@ were taken and where they are.
 - Eight channels, one region per channel at a time.
 - A marker written by code costs that code a GPIO write at each end,
   a few microseconds.
-- When a DUT wakes from sleep, the PPK2 switches range, and its
-  readings can stay tens of mA too high for 40 µs. A region that
-  contains a wake-up can therefore read too high, and so can the mean
-  of a whole capture. The report gives the median of the charge
-  next to its mean: when the two differ, trust the median.
-  [`evidence/`](evidence/README.md) has the check behind this.
+- When a DUT wakes from sleep, the PPK2 switches range, and at about
+  a third of the wake-ups it reads tens of mA for 40 µs. Nordic's app
+  shows the same bursts. A region that contains a wake-up can
+  therefore read higher than the others, and so can the mean of a
+  whole capture. The report gives the median of the charge next to its
+  mean: when the two differ, trust the median.
+  [`evidence/`](evidence/README.md#wake-up-bursts) has what is known
+  about them.
 
 ## License
 
