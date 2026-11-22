@@ -137,6 +137,8 @@ west ppk2 attribute trace.csv                           # the report
 west ppk2 plot trace.csv --window 5.3 5.8 --out ble.png # the figure
 ```
 
+![The markers in the source, a capture, the report and the figure, from a terminal](docs/img/workflow.gif)
+
 `list`, `capture`, `run` and `power` are the commands of ppk2-lib.
 `attribute` and `plot` find `zephyr.elf` under `--build-dir` (default
 `build`) and read the names of the claimed channels from it.

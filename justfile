@@ -55,3 +55,8 @@ which:
     @echo "DK_SERIAL     = {{DK_SERIAL}}"
     @echo "samples       = {{SAMPLES}}"
     @echo "boards        = {{BOARD_54LM20}} | {{BOARD_52840}}"
+
+# Append the figure of `west ppk2 plot` to the terminal recording made by
+# docs/workflow.tape: the README's recording. Needs ffmpeg.
+demo-figure terminal="workflow-terminal.gif" figure="ble.png":
+    ffmpeg -loglevel error -y -i "{{terminal}}" -loop 1 -t 6 -i "{{figure}}" -filter_complex "[0:v]fps=20,tpad=stop_mode=clone:stop_duration=1,setsar=1[a];[1:v]fps=20,scale=1500:700:force_original_aspect_ratio=decrease,pad=1500:700:(ow-iw)/2:(oh-ih)/2:color=0xfcfcfb,setsar=1[b];[a][b]concat=n=2:v=1,split[x][y];[x]palettegen[p];[y][p]paletteuse=dither=none" docs/img/workflow.gif
