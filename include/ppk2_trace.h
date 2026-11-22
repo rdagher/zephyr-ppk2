@@ -32,15 +32,21 @@ struct ppk2_trace_channel {
 
 #ifdef CONFIG_PPK2_TRACE
 
-/** Drive channel @p ch high or low. Does nothing for a channel that is not wired. */
+/**
+ * Drive channel @p ch high or low.
+ *
+ * Does nothing for a channel that is not wired, nor for the radio
+ * channel, which the hardware drives.
+ */
 void ppk2_trace_set(int ch, bool on);
 
 /**
  * Claim channel @p ch (a literal 0..7) under @p name, at file scope.
  *
  * Defines the constant ppk2_ch_<name> and stores the name in the image,
- * where `west ppk2 attribute` reads it. Fails to build when the channel
- * is not wired, and fails to link when two C files claim the same one.
+ * where `west ppk2 attribute` reads it. @p name holds 14 characters at
+ * most. Fails to build when the channel is not wired, and fails to link
+ * when two C files claim the same one.
  */
 #define PPK2_TRACE_CLAIM(ch, name) PPK2_TRACE_CLAIM_(ch, name)
 #define PPK2_TRACE_CLAIM_(ch, name)                                                                \

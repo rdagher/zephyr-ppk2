@@ -4,13 +4,14 @@ config PPK2_TRACE
 	bool "PPK2 trace markers"
 	depends on GPIO
 	help
-	  GPIO markers (ppk2_trace.h) wired to the digital inputs D0..D7 of
-	  a PPK2, to measure the current drawn while marked code runs. The pins come
-	  from the zephyr,user devicetree properties ppk2-d0-gpios to
-	  ppk2-d7-gpios. When disabled, the markers compile to nothing.
+	  GPIO markers (ppk2_trace.h) wired to the digital inputs D0..D7
+	  of a PPK2, to measure the current drawn while marked code runs.
+	  The pins come from the zephyr,user devicetree properties
+	  ppk2-d0-gpios to ppk2-d7-gpios. When disabled, the markers
+	  compile to nothing.
 
 config PPK2_TRACE_RADIO
-	bool "A channel that is high from the radio's READY to DISABLED"
+	bool "Radio channel, high from the radio's READY to DISABLED"
 	depends on PPK2_TRACE && MPSL && SOC_COMPATIBLE_NRF54LX
 	select NRFX_GPIOTE
 	select NRFX_GPPI
@@ -21,7 +22,10 @@ config PPK2_TRACE_RADIO
 	  under the name "radio". nRF54L series with MPSL only.
 
 config PPK2_TRACE_RADIO_CHANNEL
-	int "The radio channel"
+	int "Channel of the radio"
 	depends on PPK2_TRACE_RADIO
 	range 0 7
 	default 0
+	help
+	  The channel 0..7, and so the digital input D0..D7, that the
+	  radio drives. Its pin must be wired in the devicetree.
