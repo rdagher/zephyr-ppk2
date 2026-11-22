@@ -36,10 +36,11 @@ def main() -> None:
     ap.add_argument("--window", nargs=2, type=float, metavar=("START", "END"), help="seconds")
     ap.add_argument("--title", default="")
     ap.add_argument("--out", type=Path, default=Path("capture.png"))
+    ap.add_argument("--power-on-ua", type=float, default=POWER_ON_UA, help="as in attribute.py")
     args = ap.parse_args()
     names = {int(ch): label for ch, _, label in (spec.partition("=") for spec in args.name)}
 
-    rows = powered(load_rows(args.csv_path), POWER_ON_UA)
+    rows = powered(load_rows(args.csv_path), args.power_on_ua)
     t0 = rows[0][0] / 1000.0
     found = {ch: r for ch in range(8) if (r := regions(rows, ch))}
     start, end = args.window or (0.0, rows[-1][0] / 1000.0 - t0)

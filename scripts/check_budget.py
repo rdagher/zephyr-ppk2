@@ -13,7 +13,7 @@ import statistics
 import sys
 from pathlib import Path
 
-from attribute import POWER_ON_UA, idle, load_rows, powered, regions
+from attribute import POWER_ON_UA, idle, load_rows, powered, regions, volts
 
 
 def main() -> int:
@@ -27,7 +27,7 @@ def main() -> int:
     ap.add_argument("--max-ms", type=float, help="mean width of a region, in ms")
     ap.add_argument("--max-uj", type=float, help="mean energy of a region, in µJ; needs --vdd")
     ap.add_argument("--idle-max-ua", type=float, help="median current with no channel high")
-    ap.add_argument("--vdd", type=float, help="supply voltage in volts, for --max-uj")
+    ap.add_argument("--vdd", type=volts, help="supply voltage in volts, for --max-uj")
     ap.add_argument("--power-on-ua", type=float, default=POWER_ON_UA, help="as in attribute.py")
     args = ap.parse_args()
     if args.max_uj is not None and args.vdd is None:

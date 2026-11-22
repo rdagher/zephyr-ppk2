@@ -47,7 +47,7 @@ class Region:
 
 
 def load_rows(path: Path) -> list[Row]:
-    """Read a capture. Exits when its rows are not 10 µs apart."""
+    """Read a capture. Exits when two of its rows are not 10 µs apart."""
     opener = {".gz": gzip.open, ".xz": lzma.open}.get(path.suffix, open)
     with opener(path, "rt", newline="") as f:
         rows = [
@@ -58,13 +58,15 @@ def load_rows(path: Path) -> list[Row]:
             )
             for rec in csv.DictReader(f)
         ]
-    if len(rows) > 1:
-        # The charge counts 10 µs per row, so any other rate would give a wrong one.
-        step_s = (rows[-1][0] - rows[0][0]) / 1000.0 / (len(rows) - 1)
-        if abs(step_s - SAMPLE_PERIOD_S) > 0.01 * SAMPLE_PERIOD_S:
+    # The charge counts 10 µs per row: another rate, a gap or rows out
+    # of order would give a wrong one.
+    step_ms = SAMPLE_PERIOD_S * 1000.0
+    for i in range(1, len(rows)):
+        if abs(rows[i][0] - rows[i - 1][0] - step_ms) > 0.1 * step_ms:
             raise SystemExit(
-                f"error: {path}: rows are {step_s * 1e6:.1f} µs apart on average, not 10: "
-                "a capture at 100,000 samples per second is needed"
+                f"error: {path}: row {i + 2} is {(rows[i][0] - rows[i - 1][0]) * 1000:.1f} µs "
+                "after the one before, not 10: a capture at 100,000 samples per "
+                "second with no row missing is needed"
             )
     return rows
 
@@ -130,11 +132,19 @@ def report_line(label: str, found: list[Region], vdd_v: float | None) -> str:
     return line
 
 
+def volts(text: str) -> float:
+    """A supply voltage from the command line: above zero."""
+    value = float(text)
+    if not 0 < value < float("inf"):
+        raise argparse.ArgumentTypeError(f"{text} is not a supply voltage")
+    return value
+
+
 def main() -> None:
     """Print the report of a capture."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument("csv_path", type=Path, help="a capture in the app's CSV format")
-    ap.add_argument("--vdd", type=float, help="supply voltage in volts: adds an energy column")
+    ap.add_argument("--vdd", type=volts, help="supply voltage in volts: adds an energy column")
     ap.add_argument(
         "--name",
         action="append",
