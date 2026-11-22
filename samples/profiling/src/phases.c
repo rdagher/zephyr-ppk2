@@ -28,6 +28,9 @@ int measure(void)
 	PPK2_TRACE_SCOPE(ppk2_ch_measure);
 
 	busy_ms(120);
+	/* The CPU sleeps here, as it would while a sensor converts. The
+	 * marker stays high, so the sleep is part of the region.
+	 */
 	k_sleep(K_MSEC(30));
 	busy_ms(50);
 	return 42;

@@ -18,6 +18,7 @@ void wakeup(void)
 int measure(void)
 {
 	busy_ms(120);
+	/* The CPU sleeps here, as it would while a sensor converts. */
 	k_sleep(K_MSEC(30));
 	busy_ms(50);
 	return 42;

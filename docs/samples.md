@@ -25,7 +25,8 @@ west ppk2 attribute trace.csv
 
 A cycle every 2.8 s: `wakeup` (20 ms busy), `measure` (120 ms busy, a
 30 ms wait, 50 ms busy), `transmit` (200 ms busy), then a 400 ms sleep
-inside the cycle. The busy stretches are busy waits that stand in for
+inside the cycle. The 30 ms wait is a sleep, as a CPU would take while
+a sensor converts. The busy stretches are busy waits that stand in for
 real work. Each function starts with `PPK2_TRACE_SCOPE`.
 
 | Channel | Regions | Width | Mean current | Charge | Median charge |
