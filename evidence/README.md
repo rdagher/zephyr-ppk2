@@ -1,8 +1,8 @@
 # Evidence
 
 The captures behind the figures of [samples](../docs/samples.md). The
-ten files weigh 93 MB, so they are kept on the branch `captures` of
-this repository, at commit `3c98dc5`, and a west workspace that takes
+eleven files weigh 104 MB, so they are kept on the branch `captures` of
+this repository, at commit `55002a1`, and a west workspace that takes
 the module does not download them. To put them in this folder:
 
 ```sh
@@ -13,7 +13,7 @@ or, without just:
 
 ```sh
 git fetch origin captures
-git archive 3c98dc599f46165426216f9e0d5b9aabd95a40df '*.csv.xz' | tar -x -C evidence
+git archive 55002a1877edd1edcfc5b9762ffa998d076cf87a '*.csv.xz' | tar -x -C evidence
 ```
 
 | | |
@@ -30,6 +30,7 @@ git archive 3c98dc599f46165426216f9e0d5b9aabd95a40df '*.csv.xz' | tar -x -C evid
 | `wrap_profiling.csv.xz` | `samples/wrap_profiling` |
 | `ble_advertising.csv.xz` | `samples/ble_advertising` |
 | `ble_advertising_regressed.csv.xz` | The same with `k_busy_wait(15000)` in `read_sensor` |
+| `profiling_regressed.csv.xz` | `samples/profiling` with `busy_ms(30)` in `wakeup`, captured on 2026-11-22 at 14:31:58 with ppk2-lib at `b9c806c` |
 
 ## Capture procedure
 

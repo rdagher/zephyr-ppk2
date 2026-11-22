@@ -35,6 +35,40 @@ The 30 ms wait inside `measure` shows as a dip, and the 400 ms sleep as
 the flat stretch while D0 stays high. The spike to 100 mA where the
 cycle starts is a [wake-up burst](../evidence/README.md#wake-up-bursts).
 
+### Budget on one phase
+
+A budget on `wakeup`, with a little room above what it measures:
+
+```sh
+west ppk2 budget trace.csv --channel 1 --max-uc 32 --max-ms 22 --idle-max-ua 4
+```
+
+```text
+PASS mean region charge 28.27 µC (budget 32.00 µC)
+PASS mean region width 20.16 ms (budget 22.00 ms)
+PASS idle median 3.02 µA (budget 4.00 µA)
+```
+
+Make `wakeup` 10 ms longer, `busy_ms(30)` in place of `busy_ms(20)`,
+then build, flash and capture again. The same command exits 1:
+
+```text
+FAIL mean region charge 42.45 µC (budget 32.00 µC)
+FAIL mean region width 30.23 ms (budget 22.00 ms)
+PASS idle median 3.02 µA (budget 4.00 µA)
+```
+
+The report of that capture shows where the charge went. `measure` and
+`transmit` are unchanged, and the cycle costs 571.7 µC where it cost
+557.0 µC:
+
+| Channel | Regions | Width | Mean current | Charge | Median charge |
+|---|---|---|---|---|---|
+| D0 cycle | 21 | 833.165 ms | 686.16 µA | 571.7 ± 2.6 µC | 571.779 µC |
+| D1 wakeup | 21 | 30.225 ms | 1,404.31 µA | 42.446 ± 0.057 µC | 42.440 µC |
+| D2 measure | 21 | 201.369 ms | 1,204.58 µA | 242.6 ± 1.7 µC | 241.438 µC |
+| D3 transmit | 21 | 201.504 ms | 1,408.72 µA | 283.86 ± 0.16 µC | 283.829 µC |
+
 ## `wrap_profiling`
 
 The same application with no marker in its source. `trace.c` lists the
