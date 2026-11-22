@@ -7,5 +7,8 @@
 - `uvx ruff check scripts` and `uvx ruff format --check scripts` must
   pass. `just build-all` builds every sample; it needs the nRF Connect
   SDK toolchain.
+- The captures behind the figures are on the branch `captures`, not on
+  the module's branch. `just captures` puts them in `evidence/`, where
+  git ignores them.
 - Flashing and capturing use the hardware on the bench. Do not do
   either unless asked.
