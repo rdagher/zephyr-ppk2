@@ -64,9 +64,27 @@ The two builds have the same configuration and the same compiler
 options. What differs is where the code sits. The CPU spends these
 regions in the delay loop of `k_busy_wait`. The linker placed that
 loop at 0x6ff0 in the marked image and at 0x7020 in the wrapped one:
-`arm-zephyr-eabi-nm` shows it as `delay_machine_code`. A current that
-depends on where a loop runs from would explain the difference. This
-was not tested.
+`arm-zephyr-eabi-nm` shows it as `delay_machine_code`.
+
+That address is the cause. The marked sample was built twice more with
+a few bytes of padding that move the loop, and the builds were captured
+in turn, 30 s each, in captures that are not kept:
+
+| Build | Address of the loop | `transmit`, two captures |
+|---|---|---|
+| Marked | 0x6ff0 | 1,408.19 and 1,408.67 µA |
+| Marked, 16 bytes of padding | 0x7000 | 1,397.54 and 1,397.04 µA |
+| Marked, 48 bytes of padding | 0x7020 | 1,398.66 and 1,398.47 µA |
+| Wrapped | 0x7020 | 1,397.06 µA |
+
+With the loop moved, the marked sample reads as the wrapped one does.
+At 0x6ff0 the loop ends just under 0x7000, a 4 kB boundary of the
+flash, and the same instructions draw 0.7 % more there. Why they do was
+not looked into.
+
+So a difference of this size between two builds can come from where
+the linker put a loop, not from what the code does. Compare two builds
+with that in mind.
 
 The charge is the mean ± the standard deviation over the regions. On
 `cycle` and `measure` the spread is ten times that of `transmit`: both
