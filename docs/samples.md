@@ -1,8 +1,14 @@
 # Samples
 
 Three applications, each with its markers. The figures below were
-measured on 2026-11-21 on an nRF54LM20 DK, with the PPK2 in Source
-meter mode at 3.3 V. [`evidence/`](../evidence/README.md) says where the captures are.
+measured on an nRF54LM20 DK, with the PPK2 in Source meter mode at
+3.3 V, on 2026-11-21 unless a section gives another date.
+[`evidence/`](../evidence/README.md) says how the captures were taken
+and where they are.
+
+Each table gives, per channel, the number of complete regions, their
+mean width and mean current, and their charge: the mean ± the standard
+deviation over the regions, then the median.
 
 ## Running a sample
 
@@ -19,7 +25,8 @@ west ppk2 attribute trace.csv
 
 A cycle every 2.8 s: `wakeup` (20 ms busy), `measure` (120 ms busy, a
 30 ms wait, 50 ms busy), `transmit` (200 ms busy), then a 400 ms sleep
-inside the cycle. Each function starts with `PPK2_TRACE_SCOPE`.
+inside the cycle. The busy stretches are busy waits that stand in for
+real work. Each function starts with `PPK2_TRACE_SCOPE`.
 
 | Channel | Regions | Width | Mean current | Charge | Median charge |
 |---|---|---|---|---|---|
@@ -29,11 +36,15 @@ inside the cycle. Each function starts with `PPK2_TRACE_SCOPE`.
 | D3 transmit | 21 | 201.594 ms | 1,408.66 µA | 283.98 ± 0.15 µC | 283.996 µC |
 | Idle | | | 3.02 µA median | | |
 
-![One cycle of the profiling sample](img/profiling.png)
+![One cycle of samples/profiling: the current on a log scale, the four marked regions under it, and a table of their figures](img/profiling.png)
 
 The 30 ms wait inside `measure` shows as a dip, and the 400 ms sleep as
 the flat stretch while D0 stays high. The spike to 100 mA where the
 cycle starts is a [wake-up burst](../evidence/README.md#wake-up-bursts).
+
+On `cycle` and `measure` the spread of the charge is about ten times
+that of `transmit`. Both contain a wake-up from sleep, and some of
+those carry a burst. The median is not moved by them.
 
 ### Budget on one phase
 
@@ -58,9 +69,9 @@ FAIL mean region width 30.23 ms (budget 22.00 ms)
 PASS idle median 3.02 µA (budget 4.00 µA)
 ```
 
-The report of that capture shows where the charge went. `measure` and
-`transmit` are unchanged, and the cycle costs 571.7 µC where it cost
-557.0 µC:
+The report of that capture, taken on 2026-11-22, shows where the charge
+went. `measure` and `transmit` are unchanged, and the cycle costs
+571.7 µC where it cost 557.0 µC:
 
 | Channel | Regions | Width | Mean current | Charge | Median charge |
 |---|---|---|---|---|---|
@@ -84,10 +95,11 @@ functions.
 | D3 transmit | 21 | 201.595 ms | 1,397.85 µA | 281.80 ± 0.15 µC | 281.823 µC |
 | Idle | | | 3.02 µA median | | |
 
-The widths agree within 0.02 ms. The wrapped build reads 0.7 to 0.8 %
-lower in current on every channel, in this round and in an earlier one.
-That is more than two captures of one build differ by (0.05 % in
-ppk2-lib's validation).
+The widths agree with those of `profiling` within 0.02 ms. The wrapped
+build reads 0.7 to 0.8 % lower in current on every channel. Two
+captures of one build differ by less: 0.05 % at most between the two
+`ppk2 capture` runs of `profiling` in the
+[comparison](#comparison-with-nordics-app) below.
 
 On 2026-11-22 the two builds were alternated twice on the bench, 60 s
 each, in captures that are not kept. `transmit` read 1,408.42 and
@@ -120,12 +132,6 @@ So a difference of this size between two builds of this sample came
 from the layout of the image, not from what the code does. Keep that
 possibility in mind when comparing two builds.
 
-The charge is the mean ± the standard deviation over the regions. On
-`cycle` and `measure` the spread is ten times that of `transmit`: both
-contain a wake-up from sleep, and some of those carry a
-[wake-up burst](../evidence/README.md#wake-up-bursts). The median is
-not moved by them.
-
 ## `ble_advertising`
 
 A BLE advertiser that reads a sensor once a second and puts the value
@@ -139,7 +145,7 @@ busy wait marked in the source.
 | D1 sensor | 59 | 5.042 ms | 1,396.51 µA | 7.04 ± 0.61 µC | 6.928 µC |
 | Idle | | | 1.31 µA median | | |
 
-![The BLE sample around one sensor read](img/ble_advertising.png)
+![samples/ble_advertising around one sensor read: four advertising events on D0, the sensor read on D1, and a table of their figures](img/ble_advertising.png)
 
 There are three radio pulses per advertising event, one per advertising
 channel, and an event about every 100 ms. The 0.967 µC is the charge
@@ -147,7 +153,13 @@ inside one pulse: the radio's ramp-up before READY is not in it, so it
 is less than a transmission costs. The last event of the figure
 starts with a wake-up burst.
 
-### A regression caught
+The spread of the sensor read has another cause. In 2 of the 59 reads
+an advertising event falls inside the read, and the radio's current is
+counted in it: those two cost 10.2 and 10.3 µC, the others 6.9 to
+7.0 µC. A marked region holds whatever the device under test (DUT)
+draws while the pin is high. The median shows the read alone.
+
+### Budget on the sensor read
 
 With the budgets below, the sample passes:
 
@@ -181,9 +193,10 @@ each between two captures of `ppk2 capture`. The same script reads all
 six files. [`evidence/`](../evidence/README.md#comparison-with-nordics-app)
 has the conditions.
 
-Mean current of a region:
+Mean current of a region, and the difference of each `ppk2 capture`
+from the app, as a share of the app's figure:
 
-| Channel | `ppk2 capture` | The app | `ppk2 capture` | The app against each |
+| Channel | `ppk2 capture` | The app | `ppk2 capture` | Differences from the app |
 |---|---|---|---|---|
 | `profiling` D0 cycle | 675.98 µA | 676.43 µA | 675.62 µA | 0.07 %, 0.12 % |
 | `profiling` D1 wakeup | 1,399.21 µA | 1,400.24 µA | 1,399.21 µA | 0.07 %, 0.07 % |
@@ -197,6 +210,7 @@ Median charge of a region:
 | Channel | `ppk2 capture` | The app | `ppk2 capture` |
 |---|---|---|---|
 | `profiling` D0 cycle | 557.534 µC | 558.178 µC | 556.946 µC |
+| `profiling` D1 wakeup | 28.205 µC | 28.223 µC | 28.209 µC |
 | `profiling` D2 measure | 241.110 µC | 241.200 µC | 241.176 µC |
 | `profiling` D3 transmit | 283.593 µC | 283.654 µC | 283.540 µC |
 | `ble_advertising` D0 radio | 0.958 µC | 0.958 µC | 0.959 µC |
@@ -208,7 +222,7 @@ three captures of `ble_advertising`.
 
 The two tools agree within 0.2 % on the mean current, except on the
 sensor read. There the app lies between the two captures of
-`ppk2 capture`, which themselves differ by 2.7 %. Some sensor reads
-contain a [wake-up burst](../evidence/README.md#wake-up-bursts), in the
-app's capture as in the others, and it moves the mean. The medians of
-the charge agree within 0.3 %.
+`ppk2 capture`, which themselves differ by 2.7 %. The cause is the one
+given [above](#ble_advertising). An advertising event falls inside 1 of
+the 59 reads of the first capture, 1 of the 28 of the app's and 4 of
+the 59 of the last. The medians of the charge agree within 0.3 %.

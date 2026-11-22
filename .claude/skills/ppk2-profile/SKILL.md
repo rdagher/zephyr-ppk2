@@ -10,7 +10,7 @@ current. A report then gives, per channel, the width, the mean and peak
 current and the charge of the marked regions. `README.md` has the
 interface; this file is the procedure.
 
-## Before starting
+## Preparation
 
 - `west ppk2 list` must show a PPK2 with a data port. If the port is
   busy, Nordic's Power Profiler app is open: ask the user to quit it.
@@ -37,8 +37,10 @@ interface; this file is the procedure.
 2. Read the report. Compare the charge of one complete region, in µC:
    a short region at a high current can cost less than a long one at a
    low current. A region includes the regions marked inside it, so do
-   not add the rows up. Then compare the charge of the marked regions
-   per second with the idle current.
+   not add the rows up. It also includes whatever else the device
+   under test (DUT) draws meanwhile: an interrupt, a radio event. Then
+   compare the charge of the marked regions per second with the idle
+   current.
 3. If the largest cost is not inside a marked region, mark more, as in
    the table below. Each new channel needs a wired pin. A channel used
    with `PPK2_TRACE_SCOPE` or `ppk2_trace_set` also needs a
@@ -47,13 +49,15 @@ interface; this file is the procedure.
 4. Change one thing, then build, flash and capture again to `after.csv`
    with the same options and duration.
 5. Compare the two reports channel by channel. Two captures of the same
-   firmware differ by about 0.1 % on a region that contains no wake-up
-   from sleep. On a short region that contains one they differ by a few
-   percent: there, compare the median of the charge, which the report
-   prints. Two builds are another matter: on one sample of this module
-   they differed by 0.7 % from the placement of the code alone. Keep
-   the same markers in both builds, and say so when a gain or a loss
-   you report is of that size.
+   firmware already differ: by 0.05 % on the phases of
+   `samples/profiling`, by 0.4 % on the radio pulses of
+   `samples/ble_advertising`. On a short region, a wake-up from sleep
+   or a radio event falls inside some occurrences and moves the mean by
+   a few percent. There, compare the median of the charge, which the
+   report prints. Two builds can differ by the placement of the code
+   alone: 0.7 % on one sample of this module. Keep the same markers in
+   both builds, and say so when a gain or a loss you report is of that
+   size.
 6. To keep the gain, propose a budget for CI:
 
    ```sh
@@ -62,8 +66,8 @@ interface; this file is the procedure.
 
    These budgets are on the mean over the regions, and on the median
    for the idle current. Leave room above the measured mean: for the
-   regions that contain a wake-up, and a few percent for what a
-   different placement of the code can add.
+   regions that hold a wake-up or a radio event, and a few percent for
+   what a different placement of the code can add.
 
 ## Ways to mark
 
@@ -71,6 +75,7 @@ interface; this file is the procedure.
 |---|---|
 | A function or a block you can edit | `PPK2_TRACE_SCOPE(ch)` at its top |
 | A function you should not edit | `PPK2_TRACE_WRAP` in one file, and `ppk2_trace_wrap()` in CMake |
+| A region that starts in one function and ends in another | `ppk2_trace_set(ch, true)`, then `ppk2_trace_set(ch, false)` |
 | The radio, on the nRF54L series | `CONFIG_PPK2_TRACE_RADIO=y` |
 
 ## Reporting
@@ -82,3 +87,6 @@ interface; this file is the procedure.
 - `west ppk2 plot <csv> --window START END --out fig.png` draws the
   current with the channels under it, when a picture helps.
 - If a capture warns about lost samples, say so and capture again.
+- If `attribute` refuses a capture with "no sample above 200 µA", the
+  DUT was not powered: check the mode and the wiring. For a DUT that
+  draws less than that, pass `--power-on-ua`.
