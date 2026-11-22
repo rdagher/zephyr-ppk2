@@ -50,10 +50,10 @@ interface; this file is the procedure.
    firmware differ by about 0.1 % on a region that contains no wake-up
    from sleep. On a short region that contains one they differ by a few
    percent: there, compare the median of the charge, which the report
-   prints. Two builds are another matter: a difference under about 1 %
-   can come from where the linker placed the code, not from the change
-   itself. Keep the same markers in both builds, and do not report a
-   gain or a loss of that size as a result.
+   prints. Two builds are another matter: on one sample of this module
+   they differed by 0.7 % from the placement of the code alone. Keep
+   the same markers in both builds, and say so when a gain or a loss
+   you report is of that size.
 6. To keep the gain, propose a budget for CI:
 
    ```sh

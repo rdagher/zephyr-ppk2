@@ -14,8 +14,9 @@ This is an experimental release. The interface may still change.
 
 A PPK2 samples eight digital inputs with every current sample, 100,000
 times per second. A pin held high while a piece of code runs therefore
-marks, in the capture, the current that code drew. The host adds up
-the current while each pin is high.
+marks, in the capture, the time that code ran. The host adds up the
+current of the whole DUT while each pin is high: an interrupt or a
+radio event that falls inside a marked region is counted in it.
 
 A marker costs one GPIO write at each end. The radio marker costs
 nothing: the hardware drives it. With `CONFIG_PPK2_TRACE=n` every
@@ -192,8 +193,8 @@ sample of any region, `--idle-max-ua` on the median idle current, and
 `--max-uj` with `--vdd`.
 
 Leave a few percent of margin in a budget. Two builds of the same
-source can differ by nearly 1 % only because the linker placed a loop
-elsewhere: [samples](docs/samples.md#wrap_profiling) has a measured
+source differed by 0.7 % in a way that followed where the linker had
+placed the code: [samples](docs/samples.md#wrap_profiling) has that
 case. For the same reason, compare builds that carry the same markers,
 and consider shipping the image you measured, markers included.
 

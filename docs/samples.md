@@ -100,9 +100,9 @@ regions in the delay loop of `k_busy_wait`. The linker placed that
 loop at 0x6ff0 in the marked image and at 0x7020 in the wrapped one:
 `arm-zephyr-eabi-nm` shows it as `delay_machine_code`.
 
-That address is the cause. The marked sample was built twice more with
-a few bytes of padding that move the loop, and the builds were captured
-in turn, 30 s each, in captures that are not kept:
+To test this, the marked sample was built twice more with a few bytes
+of padding that move the loop, and the builds were captured in turn,
+30 s each. The padded builds and their captures are not kept:
 
 | Build | Address of the loop | `transmit`, two captures |
 |---|---|---|
@@ -111,14 +111,14 @@ in turn, 30 s each, in captures that are not kept:
 | Marked, 48 bytes of padding | 0x7020 | 1,398.66 and 1,398.47 µA |
 | Wrapped | 0x7020 | 1,397.06 µA |
 
-With the loop moved, the marked sample reads as the wrapped one does.
-At 0x6ff0 the loop ends just under 0x7000, a 4 kB boundary of the
-flash, and the same instructions draw 0.7 % more there. Why they do was
-not looked into.
+Moving the loop in these builds reproduced the lower current. The
+padding moves other code as well, so this shows an effect of where the
+code is placed, not that the loop's address alone is responsible. Why
+the placement matters was not looked into.
 
-So a difference of this size between two builds can come from where
-the linker put a loop, not from what the code does. Compare two builds
-with that in mind.
+So a difference of this size between two builds of this sample came
+from the layout of the image, not from what the code does. Keep that
+possibility in mind when comparing two builds.
 
 The charge is the mean ± the standard deviation over the regions. On
 `cycle` and `measure` the spread is ten times that of `transmit`: both
