@@ -292,7 +292,7 @@ were taken and where they are.
   [`evidence/`](evidence/README.md#wake-up-bursts) has what is known
   about them.
 
-## License
+## Licence
 
 [Apache-2.0](LICENSE-APACHE) OR [MIT](LICENSE-MIT), at your option.
 
