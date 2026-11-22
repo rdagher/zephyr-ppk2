@@ -14,7 +14,7 @@ They drive the
 [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2)
 through [ppk2-lib](https://github.com/rdagher/ppk2-lib), whoever runs
 them: a developer, a CI job or an AI coding assistant. See the
-README's [usage example](../README.md#usage) for a session that runs
+README's [quick start](../README.md#step-3-capture-and-report) for a session that runs
 them in order.
 
 ## Region names

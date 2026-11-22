@@ -16,7 +16,7 @@ This is an experimental release. The interface may still change.
 The figure is one cycle of [`samples/profiling`](samples/profiling) on
 an nRF54LM20 DK. The `wakeup` phase lasts 20.16 ms and costs 28.27 µC.
 Made 10 ms longer, it costs 42.45 µC, and the
-[budget check](#budget-check) fails.
+[budget check](#step-4-budget-check) fails.
 
 ## Principle
 
@@ -51,7 +51,11 @@ Only one program can hold a PPK2: quit Nordic's
 [Power Profiler app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/app/pc-nrfconnect-ppk/using_ppk_app.html)
 before capturing.
 
-## Setup
+## Quick start
+
+Four steps, from the module in your workspace to a budget check.
+
+### Step 1: setup
 
 Add the module to your `west.yml`. The `west-commands` line adds
 `west ppk2`:
@@ -82,7 +86,7 @@ Run `west update`. Then, in the application:
    board's ground, `VCC` to the board's supply. [Bench](docs/bench.md)
    shows the wiring of the two dev kits set up for the [`samples`](samples).
 
-## Marking code
+### Step 2: marking code
 
 Include `<ppk2_trace.h>`. A channel 0 to 7 is the digital input D0 to
 D7 of the PPK2.
@@ -105,7 +109,7 @@ There are two more ways to mark code:
 
 See [Marking code](docs/marking.md) for the whole interface.
 
-## Usage
+### Step 3: capture and report
 
 ```sh
 west ppk2 run --source --vdd 3.3 -- west flash              # power the DUT while it is flashed
@@ -118,7 +122,7 @@ west ppk2 plot trace.csv --window 3.1 4.5 --out cycle.png   # the figure
 
 See [Commands](docs/commands.md) for each command and for the report.
 
-## Budget check
+### Step 4: budget check
 
 `west ppk2 budget` exits 1 when the regions of a channel, or the idle
 current, exceed a budget:
