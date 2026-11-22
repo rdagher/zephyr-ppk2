@@ -58,8 +58,15 @@ ppk2-lib's validation).
 On 2026-11-22 the two builds were alternated twice on the bench, 60 s
 each, in captures that are not kept. `transmit` read 1,408.42 and
 1,408.40 µA marked, and 1,398.12 and 1,397.79 µA wrapped. So the 0.7 %
-follows the build and repeats to 0.02 %. The two builds are different
-binaries; the cause inside them was not looked for.
+follows the build and repeats to 0.02 %.
+
+The two builds have the same configuration and the same compiler
+options. What differs is where the code sits. The CPU spends these
+regions in the delay loop of `k_busy_wait`. The linker placed that
+loop at 0x6ff0 in the marked image and at 0x7020 in the wrapped one:
+`arm-zephyr-eabi-nm` shows it as `delay_machine_code`. A current that
+depends on where a loop runs from would explain the difference. This
+was not tested.
 
 The charge is the mean ± the standard deviation over the regions. On
 `cycle` and `measure` the spread is ten times that of `transmit`: both
