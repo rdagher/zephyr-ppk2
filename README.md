@@ -14,9 +14,13 @@ This is an experimental release. The interface may still change.
 ![One cycle of samples/profiling: the current, the four marked regions under it, and their figures](docs/img/profiling.png)
 
 The figure is one cycle of [`samples/profiling`](samples/profiling) on
-an nRF54LM20 DK. Its `wakeup` phase lasts 20.16 ms and costs 28.27 µC.
-Made 10 ms longer, it costs 42.45 µC, and the
-[budget check](#budget-check) fails.
+an nRF54LM20 DK. Its three phases are busy waits at the same current,
+so the trace does not step from one phase to the next. The dip inside
+`measure` is a 30 ms wait in its code, and the cycle ends with a 400 ms
+sleep while D0 is still high.
+
+The `wakeup` phase lasts 20.16 ms and costs 28.27 µC. Made 10 ms
+longer, it costs 42.45 µC, and the [budget check](#budget-check) fails.
 
 ## Principle
 
