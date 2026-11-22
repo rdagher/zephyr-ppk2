@@ -50,7 +50,10 @@ interface; this file is the procedure.
    firmware differ by about 0.1 % on a region that contains no wake-up
    from sleep. On a short region that contains one they differ by a few
    percent: there, compare the median of the charge, which the report
-   prints.
+   prints. Two builds are another matter: a difference under about 1 %
+   can come from where the linker placed the code, not from the change
+   itself. Keep the same markers in both builds, and do not report a
+   gain or a loss of that size as a result.
 6. To keep the gain, propose a budget for CI:
 
    ```sh
@@ -58,8 +61,9 @@ interface; this file is the procedure.
    ```
 
    These budgets are on the mean over the regions, and on the median
-   for the idle current. Leave room above the measured mean for the
-   regions that contain a wake-up.
+   for the idle current. Leave room above the measured mean: for the
+   regions that contain a wake-up, and a few percent for what a
+   different placement of the code can add.
 
 ## Ways to mark
 

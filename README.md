@@ -191,6 +191,12 @@ current, charge and width of a region, `--max-peak-ua` on the highest
 sample of any region, `--idle-max-ua` on the median idle current, and
 `--max-uj` with `--vdd`.
 
+Leave a few percent of margin in a budget. Two builds of the same
+source can differ by nearly 1 % only because the linker placed a loop
+elsewhere: [samples](docs/samples.md#wrap_profiling) has a measured
+case. For the same reason, compare builds that carry the same markers,
+and consider shipping the image you measured, markers included.
+
 ## Coding assistants
 
 [`.claude/skills/ppk2-profile/SKILL.md`](.claude/skills/ppk2-profile/SKILL.md)
