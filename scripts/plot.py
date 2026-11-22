@@ -31,12 +31,34 @@ def unit(ua: float) -> str:
 def main() -> None:
     """Draw the figure."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    ap.add_argument("csv_path", type=Path)
-    ap.add_argument("--name", action="append", default=[], metavar="CH=LABEL")
-    ap.add_argument("--window", nargs=2, type=float, metavar=("START", "END"), help="seconds")
-    ap.add_argument("--title", default="")
-    ap.add_argument("--out", type=Path, default=Path("capture.png"))
-    ap.add_argument("--power-on-ua", type=float, default=POWER_ON_UA, help="as in attribute.py")
+    ap.add_argument("csv_path", type=Path, help="a capture in the app's CSV format")
+    ap.add_argument(
+        "--name",
+        action="append",
+        default=[],
+        metavar="CH=LABEL",
+        help="name a channel, as in --name 2=wakeup (repeatable)",
+    )
+    ap.add_argument(
+        "--window",
+        nargs=2,
+        type=float,
+        metavar=("START", "END"),
+        help="the stretch to draw, in seconds from power-on (default: the whole capture)",
+    )
+    ap.add_argument("--title", default="", help="a title above the figure")
+    ap.add_argument(
+        "--out",
+        type=Path,
+        default=Path("capture.png"),
+        help="the PNG to write (default capture.png)",
+    )
+    ap.add_argument(
+        "--power-on-ua",
+        type=float,
+        default=POWER_ON_UA,
+        help="current in µA above which the DUT counts as powered (default 200)",
+    )
     args = ap.parse_args()
     names = {int(ch): label for ch, _, label in (spec.partition("=") for spec in args.name)}
 

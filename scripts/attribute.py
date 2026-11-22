@@ -4,8 +4,9 @@
 
 Reads a capture in the CSV format of Nordic's Power Profiler app, from
 ``ppk2 capture`` or exported from the app, plain or compressed (``.gz``,
-``.xz``), at 100,000 samples per second: an export at a lower rate is
-refused. A region is a stretch where a channel is high.
+``.xz``), at 100,000 samples per second: a file at a lower rate, or with
+rows missing, is refused. A region is a stretch where a channel is high;
+only the regions that begin and end inside the capture are counted.
 
 The charge of a region is the integral of its current: each row is one
 10 µs sample. The PPK2 measures current only. With ``--vdd`` an energy
@@ -156,7 +157,7 @@ def main() -> None:
         "--power-on-ua",
         type=float,
         default=POWER_ON_UA,
-        help="current above which the DUT counts as powered (default 200)",
+        help="current in µA above which the DUT counts as powered (default 200)",
     )
     args = ap.parse_args()
 

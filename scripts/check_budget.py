@@ -2,10 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 """Exit 1 when the mean over the regions of a channel, or the idle current, exceeds a budget.
 
-    python check_budget.py trace.csv --channel 0 --max-uc 700 --max-ms 1025 --idle-max-ua 5.2
+    python check_budget.py trace.csv --channel 1 --max-uc 32 --max-ms 22 --idle-max-ua 4
 
-An energy budget (``--max-uj``) needs ``--vdd``: the energy is the
-charge times that voltage.
+The budgets are on the mean over the regions, except ``--max-peak-ua``
+(the highest sample of any region) and ``--idle-max-ua`` (the median
+current with no channel high). An energy budget (``--max-uj``) needs
+``--vdd``: the energy is the charge times that voltage, taken as
+constant.
 """
 
 import argparse
@@ -20,15 +23,27 @@ def main() -> int:
     """Check the budgets; return the exit code."""
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument("csv_path", type=Path, help="a capture in the app's CSV format")
-    ap.add_argument("--channel", type=int, choices=range(8), default=0, metavar="{0..7}")
+    ap.add_argument(
+        "--channel",
+        type=int,
+        choices=range(8),
+        default=0,
+        metavar="{0..7}",
+        help="the channel whose regions are checked (default 0)",
+    )
     ap.add_argument("--max-ua", type=float, help="mean current of a region, in µA")
     ap.add_argument("--max-peak-ua", type=float, help="highest sample of any region, in µA")
     ap.add_argument("--max-uc", type=float, help="mean charge of a region, in µC")
     ap.add_argument("--max-ms", type=float, help="mean width of a region, in ms")
     ap.add_argument("--max-uj", type=float, help="mean energy of a region, in µJ; needs --vdd")
-    ap.add_argument("--idle-max-ua", type=float, help="median current with no channel high")
+    ap.add_argument("--idle-max-ua", type=float, help="median current with no channel high, in µA")
     ap.add_argument("--vdd", type=volts, help="supply voltage in volts, for --max-uj")
-    ap.add_argument("--power-on-ua", type=float, default=POWER_ON_UA, help="as in attribute.py")
+    ap.add_argument(
+        "--power-on-ua",
+        type=float,
+        default=POWER_ON_UA,
+        help="current in µA above which the DUT counts as powered (default 200)",
+    )
     args = ap.parse_args()
     if args.max_uj is not None and args.vdd is None:
         ap.error("--max-uj needs --vdd")
