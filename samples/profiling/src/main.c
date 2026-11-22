@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
- * A low-power application cycle: wakeup, measure, transmit, a short
- * sleep, then two seconds of deep idle.
+ * A low-power application cycle: wakeup, measure and transmit, 400 ms
+ * of sleep, then two seconds of sleep before the next cycle. The three
+ * phases are busy waits that stand in for real work.
  */
 #include <zephyr/kernel.h>
 

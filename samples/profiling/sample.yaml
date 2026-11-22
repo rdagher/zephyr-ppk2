@@ -1,6 +1,6 @@
 sample:
   name: PPK2 phase profiling
-  description: Low-power application cycle with per-phase PPK2 trace markers
+  description: A low-power application cycle with a PPK2 marker on each phase
 tests:
   sample.ppk2.profiling:
     platform_allow:

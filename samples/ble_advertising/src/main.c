@@ -3,7 +3,8 @@
  *
  * A BLE advertiser that reads a sensor once a second and puts the value
  * in its advertising data. D0 is the radio, raised by hardware
- * (CONFIG_PPK2_TRACE_RADIO). D1 is the sensor read.
+ * (CONFIG_PPK2_TRACE_RADIO). D1 is the sensor read, a 5 ms busy wait
+ * that stands in for one.
  */
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/kernel.h>

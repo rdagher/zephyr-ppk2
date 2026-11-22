@@ -4,5 +4,6 @@ project(wrap_profiling LANGUAGES C)
 
 target_sources(app PRIVATE src/main.c src/cycle.c src/phases.c src/trace.c)
 
-# The monitored surface — matches the PPK2_TRACE_WRAP list in trace.c.
+# The functions to mark: the same list as the PPK2_TRACE_WRAP lines of
+# src/trace.c.
 ppk2_trace_wrap(run_cycle wakeup measure transmit)

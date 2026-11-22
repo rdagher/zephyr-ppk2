@@ -1,6 +1,6 @@
 sample:
   name: PPK2 wrap profiling
-  description: Bracket code you don't own via linker wrapping
+  description: The profiling cycle, marked at link time without touching its source
 tests:
   sample.ppk2.wrap_profiling:
     platform_allow:
