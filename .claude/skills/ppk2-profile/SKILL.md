@@ -31,6 +31,9 @@ interface; this file is the procedure.
    west ppk2 attribute before.csv
    ```
 
+   `attribute` reads the channel names from `build/`; pass
+   `--build-dir` when the build is elsewhere.
+
 2. Read the report. Charge is what a battery pays: a short region at a
    high current can cost less than a long one at a low current. Compare
    the charge of the marked regions per second with the idle current.
@@ -40,7 +43,9 @@ interface; this file is the procedure.
 4. Change one thing, then build, flash and capture again to `after.csv`
    with the same options and duration.
 5. Compare the two reports channel by channel. Two captures of the same
-   firmware differ by up to 1 %: a smaller difference is not a result.
+   firmware differ by about 0.1 % on a region that contains no wake-up
+   from sleep, and by a few percent on a short region that does: there,
+   compare the median of the charge, which the report prints.
 6. To keep the gain, propose a budget for CI:
 
    ```sh
