@@ -24,7 +24,7 @@ _default:
 _tc *args:
     @cd "{{NCS_WORKSPACE}}" && nrfutil sdk-manager toolchain launch --ncs-version {{NCS_VERSION}} -- {{args}}
 
-# Build one sample for one board (default: profiling on the nRF54LM20DK).
+# Build one sample for one board (default: profiling on the nRF54LM20 DK).
 build sample="profiling" board=BOARD_54LM20:
     @just _tc west build --board "{{board}}" --pristine=auto --build-dir "{{ROOT}}/samples/{{sample}}/build/$(echo '{{board}}' | cut -d/ -f1)" "{{ROOT}}/samples/{{sample}}" -- -DZEPHYR_EXTRA_MODULES="{{ROOT}}"
 
@@ -33,7 +33,7 @@ build-all:
     @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}" && just build $s "{{BOARD_52840}}" || exit 1; done
     @just build ble_advertising "{{BOARD_54LM20}}"
 
-# Put the captures in evidence/ (93 MB): the commit of the branch
+# Put the captures in evidence/ (104 MB): the commit of the branch
 # `captures` that evidence/README.md names, fetched if it is not here.
 captures:
     git cat-file -e {{CAPTURES}}^{commit} 2>/dev/null || git fetch origin captures
@@ -47,8 +47,9 @@ plots:
     uv run --no-project --with matplotlib --with numpy python scripts/plot.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor --window 5.32 5.78 --title "samples/ble_advertising on an nRF54LM20 DK" --out docs/img/ble_advertising.png
 
 # DK_SERIAL=… targets a specific dev kit (`nrfutil device list`);
-# empty means the only attached DK. Power the rail first if the PPK2
-# owns it: `ppk2 run --vdd 3.3 -- just flash`.
+# empty means the only attached DK. The DUT must be powered through the
+# PPK2 meanwhile: `ppk2 run --source --vdd 3.3 -- just flash` (without
+# --source in Ampere meter mode).
 # Flash a sample's most recent hex via host nrfutil.
 flash sample="profiling" board=BOARD_54LM20:
     @tag="$(echo '{{board}}' | cut -d/ -f1)" && hex="{{ROOT}}/samples/{{sample}}/build/$tag/merged.hex" && if [ ! -f "$hex" ]; then echo "build first: just build {{sample}} {{board}}"; exit 1; fi && nrfutil device program --firmware "$hex" --options chip_erase_mode=ERASE_ALL {{ if DK_SERIAL == "" { "" } else { "--serial-number " + DK_SERIAL } }}
