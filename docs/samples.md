@@ -105,3 +105,42 @@ PASS idle median 1.31 µA (budget 2.00 µA)
 
 The radio and the idle current are unchanged, so the report points at
 the sensor read alone.
+
+## Comparison with Nordic's app
+
+Two samples were captured with the Power Profiler app on 2026-11-22,
+each between two captures of `ppk2 capture`. The same script reads all
+six files. [`evidence/`](../evidence/README.md#comparison-with-nordics-app)
+has the conditions.
+
+Mean current of a region:
+
+| Channel | `ppk2 capture` | The app | `ppk2 capture` | The app against each |
+|---|---|---|---|---|
+| `profiling` D0 cycle | 675.98 µA | 676.43 µA | 675.62 µA | 0.07 %, 0.12 % |
+| `profiling` D1 wakeup | 1,399.21 µA | 1,400.24 µA | 1,399.21 µA | 0.07 %, 0.07 % |
+| `profiling` D2 measure | 1,199.09 µA | 1,200.08 µA | 1,199.63 µA | 0.08 %, 0.04 % |
+| `profiling` D3 transmit | 1,406.25 µA | 1,406.64 µA | 1,406.38 µA | 0.03 %, 0.02 % |
+| `ble_advertising` D0 radio | 4,869.49 µA | 4,878.23 µA | 4,886.83 µA | 0.18 %, 0.18 % |
+| `ble_advertising` D1 sensor | 1,374.32 µA | 1,395.96 µA | 1,410.93 µA | 1.6 %, 1.1 % |
+
+Median charge of a region:
+
+| Channel | `ppk2 capture` | The app | `ppk2 capture` |
+|---|---|---|---|
+| `profiling` D0 cycle | 557.534 µC | 558.178 µC | 556.946 µC |
+| `profiling` D2 measure | 241.110 µC | 241.200 µC | 241.176 µC |
+| `profiling` D3 transmit | 283.593 µC | 283.654 µC | 283.540 µC |
+| `ble_advertising` D0 radio | 0.958 µC | 0.958 µC | 0.959 µC |
+| `ble_advertising` D1 sensor | 6.912 µC | 6.917 µC | 6.924 µC |
+
+The widths agree within 0.1 ms on `profiling`, and are 0.198 ms for
+the radio in all three captures. The idle median is 1.31 µA in all
+three captures of `ble_advertising`.
+
+The two tools agree within 0.2 % on the mean current, except on the
+sensor read. There the app lies between the two captures of
+`ppk2 capture`, which themselves differ by 2.7 %: some sensor reads
+contain a [wake-up burst](../evidence/README.md#wake-up-bursts), in the
+app's capture as in the others, and it moves the mean. The medians of
+the charge agree within 0.3 %.

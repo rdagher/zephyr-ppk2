@@ -2,7 +2,7 @@
 
 The captures behind the figures of [samples](../docs/samples.md). They
 weigh 40 MB, so they are kept on the branch `captures` of this
-repository, at commit `cfb61d2`, and a west workspace that takes the
+repository, at commit `3c98dc5`, and a west workspace that takes the
 module does not download them. To put them in this folder:
 
 ```sh
@@ -61,6 +61,31 @@ the repository.
 
 The host was a Mac with macOS 26.5.1.
 
+## Comparison with Nordic's app
+
+On 2026-11-22 two of the samples were also captured with the Power
+Profiler app, each time between two captures of `ppk2 capture`, on the
+same bench without touching it. The files are under `app/`.
+
+| Capture | Tool | Started or exported at | Length |
+|---|---|---|---|
+| `app/profiling_ppk2_1.csv.xz` | `ppk2 capture` | 11:09:19 | 60 s |
+| `app/profiling_app.csv.xz` | The app | 11:12:25 | 30 s |
+| `app/profiling_ppk2_2.csv.xz` | `ppk2 capture` | 11:15:46 | 60 s |
+| `app/ble_advertising_ppk2_1.csv.xz` | `ppk2 capture` | 11:17:01 | 60 s |
+| `app/ble_advertising_app.csv.xz` | The app | 11:20:00 | 30 s |
+| `app/ble_advertising_ppk2_2.csv.xz` | `ppk2 capture` | 11:21:07 | 60 s |
+
+`ppk2 capture` was that of ppk2-lib at commit `0e262fc`. The app was in
+the configuration it starts with: every gain at 1, spike filter with 3
+samples to smooth and coefficients 0.18 and 0.06, all eight digital
+channels shown. Its captures were exported as CSV with the timestamp,
+the current and the digital inputs, and start about 0.7 s before the
+power is switched on.
+
+[Samples](../docs/samples.md#comparison-with-nordics-app) has the
+figures.
+
 ## Reproducing the figures
 
 ```sh
@@ -70,6 +95,8 @@ python scripts/attribute.py evidence/ble_advertising.csv.xz --name 0=radio --nam
 python scripts/check_budget.py evidence/ble_advertising_regressed.csv.xz --channel 1 \
     --max-uc 8 --max-ms 6 --idle-max-ua 2
 just plots
+python scripts/attribute.py evidence/app/profiling_app.csv.xz \
+    --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit
 ```
 
 The names are passed by hand here. `west ppk2 attribute` reads them
@@ -92,5 +119,6 @@ current the DUT drew, and the median is the figure to trust.
 ## Limits
 
 One dev kit and one PPK2, one capture per sample, so 21 cycles of the
-profiling samples and 59 sensor reads. That ppk2-lib agrees
-with Nordic's Power Profiler app is shown in ppk2-lib, not here.
+profiling samples and 59 sensor reads. The comparison with the app
+covers two of the samples, on one day. That ppk2-lib
+agrees with the app on a known signal is shown in ppk2-lib.
