@@ -21,7 +21,7 @@ git archive 55002a1877edd1edcfc5b9762ffa998d076cf87a '*.csv.xz' | tar -x -C evid
 | Date | 2026-11-21 |
 | Device under test (DUT) | nRF54LM20 DK, each sample built from this repository with nRF Connect SDK v3.3.1 |
 | PPK2 | Source meter mode at 3.3 V, firmware 1.2.4 |
-| Capture | `ppk2 capture` of [ppk2-lib](https://github.com/rdagher/ppk2-lib) at commit `17bcec2`, 60 s from power-on, between 22:50 and 22:57 |
+| Capture | `ppk2 capture` of [ppk2-lib](https://github.com/rdagher/ppk2-lib) at commit `d5986ee`, 60 s from power-on, between 22:50 and 22:57 |
 | Markers | D0 to D3 on P1.12 to P1.15 |
 | Host | macOS 26.5.1 |
 
@@ -31,7 +31,7 @@ git archive 55002a1877edd1edcfc5b9762ffa998d076cf87a '*.csv.xz' | tar -x -C evid
 | `wrap_profiling.csv.xz` | `samples/wrap_profiling` |
 | `ble_advertising.csv.xz` | `samples/ble_advertising` |
 | `ble_advertising_regressed.csv.xz` | The same with `k_busy_wait(15000)` in `read_sensor` |
-| `profiling_regressed.csv.xz` | `samples/profiling` with `busy_ms(30)` in `wakeup`, captured on 2026-11-22 at 14:31:58 with ppk2-lib at `b9c806c` |
+| `profiling_regressed.csv.xz` | `samples/profiling` with `busy_ms(30)` in `wakeup`, captured on 2026-11-22 at 14:31:58 with ppk2-lib at `fd870c1` |
 
 ## Capture procedure
 
@@ -80,7 +80,7 @@ same bench without touching it. The files are under `app/`.
 | `app/ble_advertising_app.csv.xz` | The app | 11:20:00 | 30 s |
 | `app/ble_advertising_ppk2_2.csv.xz` | `ppk2 capture` | 11:21:07 | 60 s |
 
-`ppk2 capture` was that of ppk2-lib at commit `0e262fc`. The app was
+`ppk2 capture` was that of ppk2-lib at commit `6af8bad`. The app was
 Power Profiler 4.4.1 in
 [nRF Connect for Desktop](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Connect-for-desktop)
 5.4.1, in the configuration it starts with. That is every gain at 1, a
