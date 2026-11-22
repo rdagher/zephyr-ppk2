@@ -196,8 +196,8 @@ commands above.
 | [`samples/ble_advertising`](samples/ble_advertising) | A BLE advertiser: the radio by hardware, a sensor read in the source |
 
 [Samples](docs/samples.md) has what each one measures on the bench, and
-[`evidence/`](evidence/README.md) the way to the captures behind those
-figures.
+[`evidence/`](evidence/README.md) how the captures behind those figures
+were taken and where they are.
 
 ## Limitations
 

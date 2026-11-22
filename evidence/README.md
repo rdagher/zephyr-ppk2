@@ -31,6 +31,36 @@ git archive FETCH_HEAD '*.csv.xz' | tar -x -C evidence
 | `ble_advertising.csv.xz` | `samples/ble_advertising` |
 | `ble_advertising_regressed.csv.xz` | The same with `k_busy_wait(15000)` in `read_sensor` |
 
+## Capture procedure
+
+The bench is wired as in [bench](../docs/bench.md): the PPK2 in Source
+meter mode supplies the nRF54LM20 DK at 3.3 V, and D0 to D3 go to P1.12
+to P1.15. Nordic's Power Profiler app is closed. For each sample:
+
+```sh
+just build profiling                                   # nRF Connect SDK v3.3.1
+ppk2 run --source --vdd 3.3 -- just flash profiling    # the PPK2 powers the DK meanwhile
+ppk2 capture --source --vdd 3.3 --seconds 60 --out profiling.csv
+xz -9 profiling.csv
+```
+
+`ppk2 capture` switches the power on as it starts, so each capture
+begins with the boot of the DUT. The four were taken one after the
+other, without touching the bench:
+
+| Capture | Started at |
+|---|---|
+| `profiling` | 22:50:52 |
+| `wrap_profiling` | 22:52:18 |
+| `ble_advertising` | 22:53:46 |
+| `ble_advertising_regressed` | 22:55:30 |
+
+The last one is `ble_advertising` built with `k_busy_wait(15000)` in
+place of `k_busy_wait(5000)` in `read_sensor`; that change is not in
+the repository.
+
+The host was a Mac with macOS 26.5.1.
+
 ## Reproducing the figures
 
 ```sh
