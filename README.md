@@ -173,6 +173,13 @@ See [Limitations](docs/limitations.md) for the full list.
 - [Evidence](evidence/README.md): how the captures were taken, and
   where they are.
 
+## Origin
+
+The module and its documentation were written with Claude Code and
+reviewed by the author. The figures were measured on a bench: see the
+[evidence](evidence/README.md) and the
+[limitations](docs/limitations.md).
+
 ## Licence
 
 [Apache-2.0](LICENSE-APACHE) OR [MIT](LICENSE-MIT), at your option.
