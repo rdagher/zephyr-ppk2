@@ -44,7 +44,7 @@ the whole device under test (DUT), not of the marked code alone.
   environment west runs from, with Python 3.11 or newer:
 
   ```sh
-  pip install "git+https://github.com/rdagher/ppk2-lib"
+  pip install ppk2-lib
   ```
 
 Only one program can hold a PPK2: quit Nordic's

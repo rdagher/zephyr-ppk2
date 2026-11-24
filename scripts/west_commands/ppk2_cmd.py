@@ -45,7 +45,7 @@ class Ppk2(WestCommand):
         if args.sub in FROM_PPK2_LIB:
             cli = which("ppk2")
             if cli is None:
-                self.die('ppk2 not found: pip install "git+https://github.com/rdagher/ppk2-lib"')
+                self.die("ppk2 not found: pip install ppk2-lib")
             sys.exit(subprocess.call([cli, args.sub, *rest]))
 
         # --build-dir is accepted after the sub-command too, where the
