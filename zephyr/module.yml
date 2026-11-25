@@ -2,3 +2,7 @@ name: zephyr-ppk2
 build:
   cmake: .
   kconfig: Kconfig
+package-managers:
+  pip:
+    requirement-files:
+      - scripts/requirements.txt

@@ -28,7 +28,9 @@ The names in the report come from the firmware:
 
 `attribute` and `plot` read the names of the claimed channels from
 `zephyr.elf`, which they find under `--build-dir`. The default is
-`build`.
+`build`. They read the image with
+[pyelftools](https://github.com/eliben/pyelftools), which Zephyr's own
+requirements install.
 
 ## Report
 

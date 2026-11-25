@@ -34,30 +34,28 @@ current and the charge of the marked regions. The interface is described in
    `attribute` reads the channel names from `build/`; pass
    `--build-dir` when the build is elsewhere.
 
+   Take the capture with `west ppk2 capture`, as above: it power-cycles
+   the device under test (DUT). Do not use `--out` on the `run` command
+   that flashes. After a flash the chip stays in debug mode until it is
+   power-cycled, so such a recording looks plausible and reads high. An
+   idle current many times the expected one means the chip was in debug
+   mode.
+
 2. Read the report. Compare the charge of one complete region, in µC:
    a short region at a high current can cost less than a long one at a
    low current. A region includes the regions marked inside it, so do
-   not add the rows up. It also includes whatever else the device
-   under test (DUT) draws meanwhile: an interrupt, a radio event. Then
-   compare the charge of the marked regions per second with the idle
-   current.
+   not add the rows up. It also includes whatever else the DUT draws
+   meanwhile: an interrupt, a radio event. Then compare the charge of
+   the marked regions per second with the idle current.
 3. If the largest cost is not inside a marked region, mark more, as in
    the table below. Each new channel needs a wired pin. A channel used
    with `PPK2_TRACE_SCOPE` or `ppk2_trace_set` also needs a
    `PPK2_TRACE_CLAIM`. `PPK2_TRACE_WRAP` and the radio option claim
    theirs themselves: a second claim does not build.
-4. Change one thing, then build, flash and capture again to `after.csv`
-   with the same options and duration.
-5. Compare the two reports channel by channel. Two captures of the same
-   firmware already differ: by 0.05 % on the phases of
-   `samples/profiling`, by 0.4 % on the radio pulses of
-   `samples/ble_advertising`. On a short region, a wake-up from sleep
-   or a radio event falls inside some occurrences and moves the mean by
-   a few percent. There, compare the median of the charge, which the
-   report prints. Two builds can differ by the placement of the code
-   alone: 0.7 % on one sample of this module. Keep the same markers in
-   both builds, and say so when a gain or a loss you report is of that
-   size.
+4. Change one thing, then build, flash and capture again to
+   `after.csv`, as in step 1.
+5. Compare the two reports channel by channel. See "Comparing two
+   firmwares" below for what makes them comparable.
 6. To keep the gain, propose a budget for CI:
 
    ```sh
@@ -68,6 +66,22 @@ current and the charge of the marked regions. The interface is described in
    for the idle current. Leave room above the measured mean: for the
    regions that hold a wake-up or a radio event, and a few percent for
    what a different placement of the code can add.
+
+## Comparing two firmwares
+
+- Mark the same code with the same channel in both builds.
+- Take one capture of each with `west ppk2 capture` after its flash,
+  so that both start from a power cycle. Use the same mode, voltage
+  and duration.
+- Compare the median of the charge of that channel, which the report
+  prints. On a short region, a wake-up from sleep or a radio event
+  falls inside some occurrences and moves the mean by a few percent.
+- Two captures of the same firmware already differ: by 0.05 % on the
+  phases of `samples/profiling`, by 0.4 % on the radio pulses of
+  `samples/ble_advertising`.
+- Two builds can differ by the placement of the code alone: 0.7 % on
+  one sample of this module. Say so when a gain or a loss you report
+  is of that size.
 
 ## Ways to mark
 

@@ -47,6 +47,12 @@ the whole device under test (DUT), not of the marked code alone.
   pip install ppk2-lib
   ```
 
+- [pyelftools](https://github.com/eliben/pyelftools) in the same
+  environment, for `west ppk2 attribute` and `plot`. Zephyr's own
+  requirements install it. `plot` also uses matplotlib and numpy. See
+  [`scripts/requirements.txt`](scripts/requirements.txt) for the whole
+  list, which `west packages pip` reads.
+
 Only one program can hold a PPK2: quit Nordic's
 [Power Profiler app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/app/pc-nrfconnect-ppk/using_ppk_app.html)
 before capturing.
@@ -151,6 +157,16 @@ See [Samples](docs/samples.md) for what each one measures on the bench.
 is a procedure an AI coding assistant can follow to find which code
 draws the current: measure, mark more where the cost is, change one
 thing, measure again, propose a budget.
+
+An assistant that works in your application does not see this file,
+because it is in the module's folder. Point to it from the
+application's `AGENTS.md`:
+
+```markdown
+- To find which code draws the current, follow
+  `.claude/skills/ppk2-profile/SKILL.md` in the zephyr-ppk2 module.
+  `west list -f "{abspath}" zephyr-ppk2` prints the module's folder.
+```
 
 ## Limitations
 

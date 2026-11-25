@@ -9,6 +9,7 @@ The first two name the channels from the image of the build.
 import argparse
 import subprocess
 import sys
+from importlib.util import find_spec
 from pathlib import Path
 from shutil import which
 
@@ -43,10 +44,7 @@ class Ppk2(WestCommand):
     def do_run(self, args, unknown_args):
         rest = [*unknown_args, *args.args]
         if args.sub in FROM_PPK2_LIB:
-            cli = which("ppk2")
-            if cli is None:
-                self.die("ppk2 not found: pip install ppk2-lib")
-            sys.exit(subprocess.call([cli, args.sub, *rest]))
+            sys.exit(subprocess.call([*self.ppk2(), args.sub, *rest]))
 
         # --build-dir is accepted after the sub-command too, where the
         # parser above leaves it among the arguments of the script.
@@ -57,6 +55,8 @@ class Ppk2(WestCommand):
 
         names = []
         if args.sub != "budget":
+            if find_spec("elftools") is None:
+                self.die("pyelftools not found in west's Python: pip install pyelftools")
             elves = sorted(Path(build_dir).glob("**/zephyr/zephyr.elf"))
             if not elves:
                 self.die(f"no zephyr.elf under {build_dir}: pass --build-dir")
@@ -64,6 +64,15 @@ class Ppk2(WestCommand):
             found = next(filter(None, map(channel_names, elves)), {})
             names = [f"--name={ch}={label}" for ch, label in sorted(found.items())]
         sys.exit(subprocess.call([sys.executable, SCRIPTS / OURS[args.sub], *names, *rest]))
+
+    def ppk2(self) -> list[str]:
+        """The ppk2 command: the one on the PATH, or west's own Python's."""
+        cli = which("ppk2")
+        if cli:
+            return [cli]
+        if find_spec("ppk2"):
+            return [sys.executable, "-m", "ppk2"]
+        self.die("ppk2 not found on the PATH or in west's Python: pip install ppk2-lib")
 
 
 def channel_names(elf: Path) -> dict[int, str]:

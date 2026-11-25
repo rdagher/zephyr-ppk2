@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# What the `west ppk2` commands use on the host. zephyr/module.yml names
+# this file, so `west packages pip --install` installs it too.
+ppk2-lib>=0.1.0; python_version >= "3.11"
+pyelftools>=0.29    # attribute and plot read the region names from zephyr.elf
+matplotlib          # plot
+numpy               # plot
