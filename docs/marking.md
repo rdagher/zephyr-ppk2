@@ -72,8 +72,8 @@ CONFIG_PPK2_TRACE_RADIO_CHANNEL=0
 
 The radio's own events raise and drop the pin, through DPPI and GPIOTE:
 READY raises it and DISABLED drops it. The ramp-up before READY is
-outside the marked region, so the charge is that of this window, not of
-the whole radio event.
+outside the marked region, so the charge covers this window, not the
+whole radio event.
 
 The channel is claimed under the name `radio`: do not claim it again.
 

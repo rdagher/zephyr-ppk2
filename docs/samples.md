@@ -58,8 +58,8 @@ Each function starts with `PPK2_TRACE_SCOPE`.
 | Idle | | | 3.02 µA median | | |
 
 On `cycle` and `measure` the spread of the charge is about ten times
-that of `transmit`. Both contain a wake-up from sleep, and some of
-those carry a burst. They do not move the median.
+larger than on `transmit`. Both contain a wake-up from sleep, and some
+of those carry a burst. They do not move the median.
 
 ### Figure
 
@@ -114,7 +114,7 @@ The same application with no marker in its source:
 - `trace.c` lists the four functions with `PPK2_TRACE_WRAP`;
 - `CMakeLists.txt` passes them to `ppk2_trace_wrap()`.
 
-The names in the report are those of the functions.
+The report takes its names from the functions.
 
 ### Report
 
@@ -126,8 +126,8 @@ The names in the report are those of the functions.
 | D3 transmit | 21 | 201.595 ms | 1,397.85 µA | 281.80 ± 0.15 µC | 281.823 µC |
 | Idle | | | 3.02 µA median | | |
 
-The widths agree with those of `profiling` within 0.02 ms. The wrapped
-build reads 0.7 to 0.8 % lower in current on every channel.
+The widths agree with `profiling` within 0.02 ms. The wrapped build
+reads 0.7 to 0.8 % lower in current on every channel.
 
 Two captures of one build differ by less: 0.05 % at most between the
 two `ppk2 capture` runs of `profiling` in the
