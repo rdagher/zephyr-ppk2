@@ -5,8 +5,8 @@ conditions they were taken in, and the commands that redo the figures.
 
 ## Download
 
-The eleven files weigh 104 MB. They are kept on the branch `captures`
-of this repository, at commit `55002a1`, so a west workspace that takes
+The twelve files weigh 114 MB. They are kept on the branch `captures`
+of this repository, at commit `d5f7476`, so a west workspace that takes
 the module does not download them. To put them in this folder, run:
 
 ```sh
@@ -17,7 +17,7 @@ or, without [just](https://just.systems/):
 
 ```sh
 git fetch origin captures
-git archive 55002a1877edd1edcfc5b9762ffa998d076cf87a '*.csv.xz' | tar -x -C evidence
+git archive d5f74762de50988b90c8e89ec59aee44e19d6ebf '*.csv.xz' | tar -x -C evidence
 ```
 
 ## Conditions
@@ -36,7 +36,7 @@ capture differs, its row under [Files](#files) or its section says so.
 
 ## Files
 
-The following table lists the five files at the top of this folder,
+The following table lists the six files at the top of this folder,
 and the sample of each:
 
 | File | Sample |
@@ -46,6 +46,7 @@ and the sample of each:
 | `ble_advertising.csv.xz` | `samples/ble_advertising` |
 | `ble_advertising_regressed.csv.xz` | The same with `k_busy_wait(15000)` in `read_sensor` |
 | `profiling_regressed.csv.xz` | `samples/profiling` with `busy_ms(30)` in `wakeup`, captured on 2026-11-22 at 14:31:58 with ppk2-lib at `fd870c1` |
+| `ble_advertising_nrf54l15dk.csv.xz` | `samples/ble_advertising` on another kit: see [nRF54L15 DK](#nrf54l15-dk) |
 
 The other six are under `app/`. See
 [Comparison with Nordic's app](#comparison-with-nordics-app) for them.
@@ -89,6 +90,26 @@ is in the repository:
 | `ble_advertising_regressed` | `k_busy_wait(15000)` in place of `k_busy_wait(5000)` in `read_sensor` |
 | `profiling_regressed` | `busy_ms(30)` in place of `busy_ms(20)` in `wakeup` |
 
+## nRF54L15 DK
+
+One capture of `samples/ble_advertising` on the
+[nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html),
+where the SDK drives the radio channel:
+
+| Condition | Value |
+|---|---|
+| Date | 2026-11-26, started at 18:58:29 |
+| DUT | nRF54L15 DK, the sample built from this repository at commit `7156c23` with nRF Connect SDK v3.3.1 |
+| Kit settings | VDD at 3.3 V and both VCOM ports disconnected, set with the Board Configurator |
+| PPK2 | Source meter mode at 3.3 V, across the kit's current-measurement header |
+| Capture | `ppk2 capture` of ppk2-lib at commit `ae31f04`, 60 s from power-on |
+| Markers | D0 on P1.11 and D2 on P1.12, driven by the SDK. D1 on P2.08, driven by the module |
+| Host | macOS 26.5.1 |
+
+A capture in Ampere meter mode, taken an hour earlier on the same
+bench, gave the same counts, and widths within 0.003 ms. It is not in
+the repository.
+
 ## Comparison with Nordic's app
 
 On 2026-11-22 two of the samples were also captured with the Power
@@ -106,7 +127,7 @@ same bench without touching it. The files are under `app/`:
 
 ### Versions and settings
 
-`ppk2 capture` was that of ppk2-lib at commit `6af8bad`. The app was
+`ppk2 capture` came from ppk2-lib at commit `6af8bad`. The app was
 Power Profiler 4.4.1 in
 [nRF Connect for Desktop](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Connect-for-desktop)
 5.4.1, in the configuration it starts with:
@@ -135,6 +156,8 @@ python scripts/check_budget.py evidence/profiling_regressed.csv.xz --channel 1 \
 python scripts/attribute.py evidence/ble_advertising.csv.xz --name 0=radio --name 1=sensor
 python scripts/check_budget.py evidence/ble_advertising_regressed.csv.xz --channel 1 \
     --max-uc 8 --max-ms 6 --idle-max-ua 2
+python scripts/attribute.py evidence/ble_advertising_nrf54l15dk.csv.xz \
+    --name 0=radio --name 1=sensor --name 2=packet
 python scripts/attribute.py evidence/app/profiling_app.csv.xz \
     --name 0=cycle --name 1=wakeup --name 2=measure --name 3=transmit
 just plots
@@ -198,7 +221,8 @@ for one such wake-up, and what the spike filter does with it.
 
 ## Limitations
 
-- One dev kit and one PPK2.
+- One PPK2 and one nRF54LM20 DK, with a single capture on one
+  nRF54L15 DK.
 - One capture per sample, so 21 cycles of the profiling samples and 59
   sensor reads.
 - The comparison with the app covers two of the samples, on one day.

@@ -12,15 +12,14 @@ PPK2 that can raise the reading of a short region.
 - `profiling` and `wrap_profiling` build for the
   [nRF52840 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf52840dk/doc/index.html)
   as well, but were not captured on it.
-- `ble_advertising` builds for the
-  [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html)
-  as well, with its radio pin driven by the SDK, but was not captured
-  on it.
+- `ble_advertising` was also captured once on an
+  [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html),
+  with its radio pin driven by the SDK.
 - Apart from the radio channel, the module uses only
   [Zephyr](https://docs.zephyrproject.org/latest/)'s own interfaces. It
   has been built for three Nordic boards only, in an
   [nRF Connect SDK](https://github.com/nrfconnect/sdk-nrf) workspace,
-  and run on one.
+  and run on two.
 
 ## Markers
 

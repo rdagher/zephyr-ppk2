@@ -187,9 +187,9 @@ in its advertising data. It marks two channels:
   event to DISABLED;
 - D1, the sensor read, a 5 ms busy wait marked in the source.
 
-The figures below are from the nRF54LM20 DK. The sample builds for the
-nRF54L15 DK too, where the SDK drives D0: see
-[Bench](bench.md#nrf54l15-dk).
+The figures below are from the nRF54LM20 DK. See
+[nRF54L15 DK](#nrf54l15-dk) for the same sample on that kit, where the
+SDK drives D0.
 
 ### Report
 
@@ -244,6 +244,29 @@ PASS idle median 1.31 µA (budget 2.00 µA)
 
 The radio and the idle current are unchanged, so the report points at
 the sensor read alone.
+
+### nRF54L15 DK
+
+On the
+[nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html)
+the SDK drives the radio channel: see
+[Marking code](marking.md#kits-covered-by-the-sdk). The sample was
+captured on that kit on 2026-11-26, for 60 s in Source meter mode at
+3.3 V:
+
+| Channel | Regions | Width | Mean current | Charge | Median charge |
+|---|---|---|---|---|---|
+| D0 radio | 1,701 | 0.198 ms | 4,489.25 µA | 0.889 ± 0.079 µC | 0.917 µC |
+| D1 sensor | 59 | 5.005 ms | 1,534.89 µA | 7.69 ± 0.71 µC | 7.518 µC |
+| D2 packet | 1,701 | 0.153 ms | 4,816.12 µA | 0.737 ± 0.039 µC | 0.727 µC |
+| Idle | | | 1.09 µA median | | |
+
+The radio channel counts the same 1,701 pulses of 0.198 ms as on the
+nRF54LM20 DK, where the module routes the two events itself.
+
+D2 is the second pin of the SDK's option, wired to a third digital
+input. It is high from the radio's ADDRESS event to END. The module
+does not name it, so the report was run with `--name 2=packet`.
 
 ## Comparison with Nordic's app
 

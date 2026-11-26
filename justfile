@@ -13,7 +13,7 @@ BOARD_52840  := "nrf52840dk/nrf52840"
 BOARD_54L15  := "nrf54l15dk/nrf54l15/cpuapp"
 
 SAMPLES := "profiling wrap_profiling"
-CAPTURES := "55002a1877edd1edcfc5b9762ffa998d076cf87a"
+CAPTURES := "d5f74762de50988b90c8e89ec59aee44e19d6ebf"
 ROOT    := justfile_directory()
 
 # Show available recipes.

@@ -9,7 +9,7 @@ for the samples, and how they are powered and flashed.
 | Dev kit | Board target | D0 | D1 | D2 | D3 |
 |---|---|---|---|---|---|
 | [nRF54LM20 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54lm20dk/doc/index.html) | `nrf54lm20dk/nrf54lm20b/cpuapp` | P1.12 | P1.13 | P1.14 | P1.15 |
-| [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html) | `nrf54l15dk/nrf54l15/cpuapp` | P1.11 | P2.08 | | |
+| [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html) | `nrf54l15dk/nrf54l15/cpuapp` | P1.11 | P2.08 | P1.12 | |
 | [nRF52840 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf52840dk/doc/index.html) | `nrf52840dk/nrf52840` | P0.28 | P0.29 | P0.30 | P0.31 |
 
 From the PPK2's logic port:
@@ -35,7 +35,12 @@ west ppk2 power on --source --vdd 3.3 --hold       # or hold it on until Ctrl-C
 ```
 
 Without `--source`, the PPK2 is in Ampere meter mode and measures a
-DUT that has its own supply.
+DUT that has its own supply. In that mode, pass the DUT's voltage to
+`--vdd`.
+
+Close
+[nRF Connect for Desktop](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Connect-for-desktop)
+first: while one of its apps is open, the PPK2's port can be busy.
 
 ## nRF54LM20 DK
 
@@ -56,8 +61,17 @@ that the SDK drives: see
 
 Put the PPK2 across the kit's
 [current-measurement header](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/measurements/current_measurements.html),
-P6, as on the nRF54LM20 DK. The sample builds for this kit but was not
-captured on it.
+P6, as on the nRF54LM20 DK.
+
+The kit supplies the nRF54L15 at
+[1.8 V by default](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/hw_desription/power_supply.html).
+The sample was captured at 3.3 V, set with Nordic's
+[Board Configurator](https://docs.nordicsemi.com/bundle/nrf-connect-board-configurator/page/index.html).
+
+With the jumper removed from the header, the debug probe only shows on
+USB while the nRF54L15 is powered, about 2 s after the power comes on.
+So hold the power on before flashing: see
+[Power and flashing](#power-and-flashing).
 
 ## nRF52840 DK
 

@@ -170,7 +170,8 @@ application's `AGENTS.md`:
 
 ## Limitations
 
-- Measured on one nRF54LM20 DK, with one PPK2.
+- Measured on one nRF54LM20 DK and, for the BLE sample, on one
+  nRF54L15 DK, with one PPK2.
 - The radio channel is only supported on the nRF54L series, and on the
   kits that the SDK's `CONFIG_MPSL_PIN_DEBUG` lists.
 - A short region that contains a wake-up from sleep can read higher:
