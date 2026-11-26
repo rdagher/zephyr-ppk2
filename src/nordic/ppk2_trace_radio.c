@@ -3,31 +3,45 @@
  *
  * The radio channel: high from the radio's READY event to its DISABLED
  * event, with no code running. The ramp-up before READY is not in it.
- * MPSL publishes the radio's READY and DISABLED events on two DPPI
- * channels; a GPIOTE task on the pin subscribes to them.
  *
  * The nRF Connect SDK has an option for this, CONFIG_MPSL_PIN_DEBUG
- * (nrf/subsys/mpsl/pin_debug). Its board list leaves the nRF54LM20 DK
- * out, in v3.3.1 and still on main in November 2026. This file follows
- * the same pattern for one pin, written from the public interfaces of
- * MPSL and nrfx. It can go once that option covers the board.
+ * (nrf/subsys/mpsl/pin_debug). On a kit that is on its board list,
+ * enable it: the SDK drives the pin, and this file only names the
+ * channel.
+ *
+ * The list leaves the nRF54LM20 DK out, in v3.3.1 and still on main in
+ * November 2026. Without the option, this file routes the two events
+ * itself. MPSL publishes the radio's READY and DISABLED events on two
+ * DPPI channels; a GPIOTE task on the pin subscribes to them. It
+ * follows the pattern of the option for one pin, written from the
+ * public interfaces of MPSL and nrfx. That part can go once the option
+ * covers the board.
  */
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 
-#include <gpiote_nrfx.h>
-#include <helpers/nrfx_gppi.h>
-#include <mpsl_dppi_protocol_api.h>
-#include <nrfx_gpiote.h>
 #include <soc_nrf_common.h>
 
 #include <ppk2_trace.h>
 
 #define RADIO_GPIOS _CONCAT_3(ppk2_d, CONFIG_PPK2_TRACE_RADIO_CHANNEL, _gpios)
 #define RADIO_PIN   NRF_DT_GPIOS_TO_PSEL(DT_PATH(zephyr_user), RADIO_GPIOS)
-#define RADIO_GPIOTE NRF_DT_GPIOTE_NODE(DT_PATH(zephyr_user), RADIO_GPIOS)
 
 PPK2_TRACE_CLAIM(CONFIG_PPK2_TRACE_RADIO_CHANNEL, radio);
+
+#ifdef CONFIG_MPSL_PIN_DEBUG
+
+BUILD_ASSERT(RADIO_PIN == CONFIG_MPSL_PIN_DEBUG_RADIO_READY_AND_DISABLED_PIN,
+	     "the radio channel is not wired to the pin that CONFIG_MPSL_PIN_DEBUG drives");
+
+#else
+
+#include <gpiote_nrfx.h>
+#include <helpers/nrfx_gppi.h>
+#include <mpsl_dppi_protocol_api.h>
+#include <nrfx_gpiote.h>
+
+#define RADIO_GPIOTE NRF_DT_GPIOTE_NODE(DT_PATH(zephyr_user), RADIO_GPIOS)
 
 static int ppk2_trace_radio_init(void)
 {
@@ -73,3 +87,5 @@ static int ppk2_trace_radio_init(void)
 }
 
 SYS_INIT(ppk2_trace_radio_init, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
+
+#endif /* CONFIG_MPSL_PIN_DEBUG */

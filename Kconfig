@@ -12,14 +12,21 @@ config PPK2_TRACE
 
 config PPK2_TRACE_RADIO
 	bool "Radio channel, high from the radio's READY to DISABLED"
-	depends on PPK2_TRACE && MPSL && SOC_COMPATIBLE_NRF54LX
-	select NRFX_GPIOTE
-	select NRFX_GPPI
+	depends on PPK2_TRACE && MPSL && (SOC_COMPATIBLE_NRF54LX || MPSL_PIN_DEBUG)
+	select NRFX_GPIOTE if !MPSL_PIN_DEBUG
+	select NRFX_GPPI if !MPSL_PIN_DEBUG
 	help
 	  The hardware raises the channel at the radio's READY event and
 	  drops it at DISABLED. No code runs for it, and the ramp-up before
 	  READY is not inside the marked region. The channel is claimed
-	  under the name "radio". nRF54L series with MPSL only.
+	  under the name "radio".
+
+	  With CONFIG_MPSL_PIN_DEBUG, the nRF Connect SDK drives the pin
+	  and the module only names the channel. The pin wired to the
+	  channel must be the one of
+	  CONFIG_MPSL_PIN_DEBUG_RADIO_READY_AND_DISABLED_PIN. Without that
+	  option, the module routes the two events itself, on the nRF54L
+	  series only.
 
 config PPK2_TRACE_RADIO_CHANNEL
 	int "Channel of the radio"

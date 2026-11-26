@@ -9,6 +9,7 @@ for the samples, and how they are powered and flashed.
 | Dev kit | Board target | D0 | D1 | D2 | D3 |
 |---|---|---|---|---|---|
 | [nRF54LM20 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54lm20dk/doc/index.html) | `nrf54lm20dk/nrf54lm20b/cpuapp` | P1.12 | P1.13 | P1.14 | P1.15 |
+| [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html) | `nrf54l15dk/nrf54l15/cpuapp` | P1.11 | P2.08 | | |
 | [nRF52840 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf52840dk/doc/index.html) | `nrf52840dk/nrf52840` | P0.28 | P0.29 | P0.30 | P0.31 |
 
 From the PPK2's logic port:
@@ -46,6 +47,17 @@ Everything else on the board stays connected.
 See ppk2-lib's
 [getting started](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/getting-started.md#wiring)
 page for both wirings, Ampere meter and Source meter.
+
+## nRF54L15 DK
+
+This kit is set up for `ble_advertising` only. D0 is P1.11, the pin
+that the SDK drives: see
+[Marking code](marking.md#kits-covered-by-the-sdk).
+
+Put the PPK2 across the kit's
+[current-measurement header](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/measurements/current_measurements.html),
+P6, as on the nRF54LM20 DK. The sample builds for this kit but was not
+captured on it.
 
 ## nRF52840 DK
 

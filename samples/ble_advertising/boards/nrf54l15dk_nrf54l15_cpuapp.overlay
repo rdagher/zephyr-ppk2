@@ -1,0 +1,8 @@
+/* SPDX-License-Identifier: Apache-2.0 OR MIT */
+/ {
+	zephyr,user {
+		/* P1.11 is the pin that CONFIG_MPSL_PIN_DEBUG drives by default. */
+		ppk2-d0-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+		ppk2-d1-gpios = <&gpio2 8 GPIO_ACTIVE_HIGH>;
+	};
+};

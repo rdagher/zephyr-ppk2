@@ -12,16 +12,21 @@ PPK2 that can raise the reading of a short region.
 - `profiling` and `wrap_profiling` build for the
   [nRF52840 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf52840dk/doc/index.html)
   as well, but were not captured on it.
+- `ble_advertising` builds for the
+  [nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html)
+  as well, with its radio pin driven by the SDK, but was not captured
+  on it.
 - Apart from the radio channel, the module uses only
   [Zephyr](https://docs.zephyrproject.org/latest/)'s own interfaces. It
-  has been built for two Nordic boards only, in an
+  has been built for three Nordic boards only, in an
   [nRF Connect SDK](https://github.com/nrfconnect/sdk-nrf) workspace,
   and run on one.
 
 ## Markers
 
 - The [radio channel](marking.md#radio-channel) is only supported on
-  the nRF54L series.
+  the nRF54L series, and on the kits that the SDK's
+  `CONFIG_MPSL_PIN_DEBUG` lists.
 - Eight channels, one region per channel at a time.
 - A marker written by code costs that code a GPIO write at each end.
   Its duration was not measured.

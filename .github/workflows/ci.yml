@@ -77,8 +77,12 @@ jobs:
           - board: nrf54lm20dk/nrf54lm20b/cpuapp
             sample: wrap_profiling
             trace: n
-          # The radio channel exists on the nRF54L series only.
+          # The radio channel: routed by the module on the nRF54LM20 DK,
+          # driven by the SDK's CONFIG_MPSL_PIN_DEBUG on the nRF54L15 DK.
           - board: nrf54lm20dk/nrf54lm20b/cpuapp
+            sample: ble_advertising
+            trace: y
+          - board: nrf54l15dk/nrf54l15/cpuapp
             sample: ble_advertising
             trace: y
     steps:

@@ -90,7 +90,7 @@ Run `west update`. Then, in the application:
 
 3. Wire the PPK2's logic port: `D0` and `D1` accordingly, `GND` to the
    board's ground, `VCC` to the board's supply. [Bench](docs/bench.md)
-   shows the wiring of the two dev kits set up for the [`samples`](samples).
+   shows the wiring of the dev kits set up for the [`samples`](samples).
 
 ### Step 2: marking code
 
@@ -171,7 +171,8 @@ application's `AGENTS.md`:
 ## Limitations
 
 - Measured on one nRF54LM20 DK, with one PPK2.
-- The radio channel is only supported on the nRF54L series.
+- The radio channel is only supported on the nRF54L series, and on the
+  kits that the SDK's `CONFIG_MPSL_PIN_DEBUG` lists.
 - A short region that contains a wake-up from sleep can read higher:
   trust the median.
 
@@ -184,7 +185,7 @@ See [Limitations](docs/limitations.md) for the full list.
 - [Commands](docs/commands.md): the report, the figure, the budget
   check.
 - [Limitations](docs/limitations.md): what was tested, and what was not.
-- [Bench](docs/bench.md): the wiring of the two dev kits.
+- [Bench](docs/bench.md): the wiring of the dev kits.
 - [Samples](docs/samples.md): what each sample measures on the bench.
 - [Evidence](evidence/README.md): how the captures were taken, and
   where they are.

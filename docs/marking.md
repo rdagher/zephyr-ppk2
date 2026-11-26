@@ -84,13 +84,42 @@ advertiser, the radio is on D0 and a sensor read on D1. Each
 advertising event shows three pulses of 0.198 ms, one per advertising
 channel.
 
+### Kits covered by the SDK
+
+The nRF Connect SDK has its own option for radio pins,
+[`CONFIG_MPSL_PIN_DEBUG`](https://github.com/nrfconnect/sdk-nrf/blob/v3.3.1/subsys/mpsl/pin_debug/Kconfig).
+On a kit that is on its board list, enable it as well:
+
+```ini
+CONFIG_MPSL_PIN_DEBUG=y
+```
+
+The SDK then drives the pin, and the module only names the channel.
+Nordic marks the option as experimental.
+
+The pin wired to the channel must be the pin of
+`CONFIG_MPSL_PIN_DEBUG_RADIO_READY_AND_DISABLED_PIN`. The build fails
+when the two differ.
+
+`samples/ble_advertising` is built this way for the
+[nRF54L15 DK](https://docs.zephyrproject.org/latest/boards/nordic/nrf54l15dk/doc/index.html),
+where that pin is P1.11 by default. The option drives a second pin
+too, on the radio's ADDRESS and END events: P1.12 by default on that
+kit. Keep the markers off it.
+
+In v3.3.1 of the SDK, the board list holds nRF52, nRF53 and nRF54L15
+kits. It leaves the nRF54LM20 DK out. Without the option, the module
+routes the two events itself, on the nRF54L series only.
+
 ### Portability
 
 The radio channel is the one part of the module that is specific to a
-vendor. It is only supported on Nordic's nRF54L series, under the
+vendor. It is only supported under the
 [nRF Connect SDK](https://github.com/nrfconnect/sdk-nrf), whose radio
 layer ([MPSL](https://github.com/nrfconnect/sdk-nrfxlib/tree/main/mpsl))
-publishes those events. Its code lives in `src/nordic/`.
+publishes those events. It works on Nordic's nRF54L series, and on
+the kits that `CONFIG_MPSL_PIN_DEBUG` lists. Its code lives in
+`src/nordic/`.
 
 The rest of the module is plain
 [Zephyr](https://docs.zephyrproject.org/latest/): devicetree, the GPIO

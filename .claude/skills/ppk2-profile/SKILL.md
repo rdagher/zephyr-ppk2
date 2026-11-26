@@ -90,7 +90,7 @@ current and the charge of the marked regions. The interface is described in
 | A function or a block you can edit | `PPK2_TRACE_SCOPE(ch)` at its top |
 | A function you should not edit | `PPK2_TRACE_WRAP` in one file, and `ppk2_trace_wrap()` in CMake |
 | A region that starts in one function and ends in another | `ppk2_trace_set(ch, true)`, then `ppk2_trace_set(ch, false)` |
-| The radio, on the nRF54L series | `CONFIG_PPK2_TRACE_RADIO=y` |
+| The radio | `CONFIG_PPK2_TRACE_RADIO=y`, with `CONFIG_MPSL_PIN_DEBUG=y` on a kit that this SDK option lists |
 
 ## Reporting
 

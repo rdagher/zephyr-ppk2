@@ -187,6 +187,10 @@ in its advertising data. It marks two channels:
   event to DISABLED;
 - D1, the sensor read, a 5 ms busy wait marked in the source.
 
+The figures below are from the nRF54LM20 DK. The sample builds for the
+nRF54L15 DK too, where the SDK drives D0: see
+[Bench](bench.md#nrf54l15-dk).
+
 ### Report
 
 | Channel | Regions | Width | Mean current | Charge | Median charge |

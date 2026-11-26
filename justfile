@@ -10,6 +10,7 @@ DK_SERIAL     := env_var_or_default("DK_SERIAL", "")
 
 BOARD_54LM20 := "nrf54lm20dk/nrf54lm20b/cpuapp"
 BOARD_52840  := "nrf52840dk/nrf52840"
+BOARD_54L15  := "nrf54l15dk/nrf54l15/cpuapp"
 
 SAMPLES := "profiling wrap_profiling"
 CAPTURES := "55002a1877edd1edcfc5b9762ffa998d076cf87a"
@@ -32,6 +33,7 @@ build sample="profiling" board=BOARD_54LM20:
 build-all:
     @for s in {{SAMPLES}}; do just build $s "{{BOARD_54LM20}}" && just build $s "{{BOARD_52840}}" || exit 1; done
     @just build ble_advertising "{{BOARD_54LM20}}"
+    @just build ble_advertising "{{BOARD_54L15}}"
 
 # Put the captures in evidence/ (104 MB): the commit of the branch
 # `captures` that evidence/README.md names, fetched if it is not here.
@@ -64,7 +66,7 @@ which:
     @echo "NCS_VERSION   = {{NCS_VERSION}}"
     @echo "DK_SERIAL     = {{DK_SERIAL}}"
     @echo "samples       = {{SAMPLES}}"
-    @echo "boards        = {{BOARD_54LM20}} | {{BOARD_52840}}"
+    @echo "boards        = {{BOARD_54LM20}} | {{BOARD_52840}} | {{BOARD_54L15}}"
 
 # Append the figure of `west ppk2 plot` to the terminal recording made by
 # docs/workflow.tape: the README's recording. Needs ffmpeg.
