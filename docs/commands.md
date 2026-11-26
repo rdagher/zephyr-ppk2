@@ -162,6 +162,7 @@ For the same reason:
   reads.
 - [Samples](samples.md): the report and the budget check of each
   sample.
+- [Using the module without west](without-west.md)
 - [Limitations](limitations.md)
 - ppk2-lib's
   [command reference](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/command.md):

@@ -184,6 +184,8 @@ See [Limitations](docs/limitations.md) for the full list.
   the radio channel.
 - [Commands](docs/commands.md): the report, the figure, the budget
   check.
+- [Without west](docs/without-west.md): the same steps with CMake,
+  twister and the scripts called directly.
 - [Limitations](docs/limitations.md): what was tested, and what was not.
 - [Bench](docs/bench.md): the wiring of the dev kits.
 - [Samples](docs/samples.md): what each sample measures on the bench.
