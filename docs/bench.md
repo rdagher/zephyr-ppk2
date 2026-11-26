@@ -63,10 +63,12 @@ Put the PPK2 across the kit's
 [current-measurement header](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/measurements/current_measurements.html),
 P6, as on the nRF54LM20 DK.
 
-The kit supplies the nRF54L15 at
-[1.8 V by default](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/hw_desription/power_supply.html).
-The sample was captured at 3.3 V, set with Nordic's
+In Ampere meter mode the kit supplies the nRF54L15: at
+[1.8 V by default](https://docs.nordicsemi.com/r/bundle/ug_nrf54l15_dk/page/ug/nrf54l15_dk/hw_desription/power_supply.html),
+or at the voltage set with Nordic's
 [Board Configurator](https://docs.nordicsemi.com/bundle/nrf-connect-board-configurator/page/index.html).
+In Source meter mode the PPK2 supplies it, at the voltage given to
+`--vdd`. The sample was captured in Source meter mode at 3.3 V.
 
 With the jumper removed from the header, the debug probe only shows on
 USB while the nRF54L15 is powered, about 2 s after the power comes on.
