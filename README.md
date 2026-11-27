@@ -48,8 +48,8 @@ the whole device under test (DUT), not of the marked code alone.
   ```
 
 - [pyelftools](https://github.com/eliben/pyelftools) in the same
-  environment, for `west ppk2 attribute` and `plot`. Zephyr's own
-  requirements install it. `plot` also uses matplotlib and numpy. See
+  environment, for `west ppk2 attribute`, `plot` and `wiring`. Zephyr's
+  own requirements install it. `plot` also uses matplotlib and numpy. See
   [`scripts/requirements.txt`](scripts/requirements.txt) for the whole
   list, which `west packages pip` reads.
 

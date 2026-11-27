@@ -19,6 +19,14 @@ current and the charge of the marked regions. The interface is described in
 - Check the overlay for the wired channels (`ppk2-dN-gpios`). At most
   eight, and one region per channel at a time.
 - Flashing replaces what is on the board. Say so before the first flash.
+- A wire on the wrong pin gives a report that looks right, under the
+  wrong names. On a bench you have not used before, or when a channel
+  shows no region, run the wiring check first: build with
+  `-DCONFIG_PPK2_TRACE_WIRING_CHECK=y`, flash, capture 3 s from
+  power-on and run `west ppk2 wiring <csv>`. A `FAIL` line names the
+  input that saw the channel. Report it and let the user choose between
+  moving the wire and changing the overlay. Then build without the
+  option again: the check adds three regions per channel to a report.
 
 ## Procedure
 

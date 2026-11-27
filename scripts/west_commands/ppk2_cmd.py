@@ -2,8 +2,8 @@
 """``west ppk2``: capture with ppk2-lib, then report on the marked channels.
 
 ``list``, ``capture``, ``run`` and ``power`` are the commands of ppk2-lib.
-``attribute``, ``plot`` and ``budget`` run the scripts of this module.
-The first two name the channels from the image of the build.
+``attribute``, ``plot``, ``budget`` and ``wiring`` run the scripts of this
+module. All but ``budget`` name the channels from the image of the build.
 """
 
 import argparse
@@ -17,7 +17,12 @@ from west.commands import WestCommand
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 FROM_PPK2_LIB = ("list", "capture", "run", "power")
-OURS = {"attribute": "attribute.py", "plot": "plot.py", "budget": "check_budget.py"}
+OURS = {
+    "attribute": "attribute.py",
+    "plot": "plot.py",
+    "budget": "check_budget.py",
+    "wiring": "check_wiring.py",
+}
 
 
 class Ppk2(WestCommand):

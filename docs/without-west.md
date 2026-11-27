@@ -15,6 +15,7 @@ module. Both can be called directly:
 | `west ppk2 attribute` | `python zephyr-ppk2/scripts/attribute.py` |
 | `west ppk2 plot` | `python zephyr-ppk2/scripts/plot.py` |
 | `west ppk2 budget` | `python zephyr-ppk2/scripts/check_budget.py` |
+| `west ppk2 wiring` | `python zephyr-ppk2/scripts/check_wiring.py` |
 
 To install `ppk2` and what `plot.py` imports, run:
 

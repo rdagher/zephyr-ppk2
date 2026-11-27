@@ -9,6 +9,7 @@ region, and check it against a budget.
 | `attribute` | Prints the [report](#report) |
 | `plot` | Draws the [figure](#figure) |
 | `budget` | Exits 1 when a [budget](#budget-check) is exceeded |
+| `wiring` | Tells which digital input sees which channel, from the [wiring check](bench.md#wiring-check) at boot |
 
 They drive the
 [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2)
@@ -26,9 +27,9 @@ The names in the report come from the firmware:
 2. It is flashed to the device under test (DUT).
 3. The host reads the names back from `zephyr.elf` for the report.
 
-`attribute` and `plot` read the names of the claimed channels from
-`zephyr.elf`, which they find under `--build-dir`. The default is
-`build`. They read the image with
+`attribute`, `plot` and `wiring` read the names of the claimed
+channels from `zephyr.elf`, which they find under `--build-dir`. The
+default is `build`. They read the image with
 [pyelftools](https://github.com/eliben/pyelftools), which Zephyr's own
 requirements install.
 

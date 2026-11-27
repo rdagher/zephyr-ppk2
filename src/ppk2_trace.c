@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 OR MIT */
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/init.h>
+#include <zephyr/kernel.h>
 
 #include <ppk2_trace.h>
 
@@ -24,6 +25,26 @@ void ppk2_trace_set(int ch, bool on)
 	}
 }
 
+/*
+ * The wiring check: each wired channel is held high in turn, channel n
+ * for n + 1 ms, three times over. `west ppk2 wiring` reads the widths
+ * in a capture and tells which digital input saw which channel.
+ */
+static void ppk2_trace_wiring_check(void)
+{
+	for (int round = 0; round < 3; round++) {
+		for (int ch = 0; ch < (int)ARRAY_SIZE(pins); ch++) {
+			if (pins[ch].port == NULL || IS_RADIO_CHANNEL(ch)) {
+				continue;
+			}
+			ppk2_trace_set(ch, true);
+			k_busy_wait(USEC_PER_MSEC * (ch + 1));
+			ppk2_trace_set(ch, false);
+			k_busy_wait(2 * USEC_PER_MSEC);
+		}
+	}
+}
+
 static int ppk2_trace_init(void)
 {
 	ARRAY_FOR_EACH_PTR(pins, pin) {
@@ -38,6 +59,9 @@ static int ppk2_trace_init(void)
 		if (err) {
 			return err;
 		}
+	}
+	if (IS_ENABLED(CONFIG_PPK2_TRACE_WIRING_CHECK)) {
+		ppk2_trace_wiring_check();
 	}
 	return 0;
 }

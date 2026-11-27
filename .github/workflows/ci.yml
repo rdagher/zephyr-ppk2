@@ -29,6 +29,7 @@ jobs:
       - run: |
           python3 scripts/attribute.py --help >/dev/null
           python3 scripts/check_budget.py --help >/dev/null
+          python3 scripts/check_wiring.py --help >/dev/null
 
   # Seed the NCS cache once so the build matrix never stampedes a
   # cold key with parallel multi-GB installs.

@@ -42,6 +42,47 @@ Close
 [nRF Connect for Desktop](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Connect-for-desktop)
 first: while one of its apps is open, the PPK2's port can be busy.
 
+## Wiring check
+
+A wire on the wrong pin does not show in a report: the regions are
+there, under another name. To check the wires, build with
+`CONFIG_PPK2_TRACE_WIRING_CHECK=y`. At boot, the module then holds each
+wired channel high in turn: channel n for n + 1 ms, three times over.
+`west ppk2 wiring` reads the widths in a capture from power-on and
+prints which digital input saw which channel. For `ble_advertising` on
+the nRF54L15 DK:
+
+```sh
+west build -b nrf54l15dk/nrf54l15/cpuapp zephyr-ppk2/samples/ble_advertising -- -DCONFIG_PPK2_TRACE_WIRING_CHECK=y
+```
+
+Flash it, then capture a few seconds and run the check:
+
+```sh
+west ppk2 capture --source --vdd 3.3 --out wiring.csv --seconds 3
+west ppk2 wiring wiring.csv
+```
+
+```text
+SKIP D0 radio: driven by the hardware
+PASS D1 sensor: on D1
+```
+
+A channel seen on another input, on several or on none is a `FAIL`
+line, and the command exits 1. A test firmware with three channels,
+two of them declared on each other's pin as two swapped wires would
+be, printed:
+
+```text
+PASS D0 wakeup: on D0
+FAIL D1 measure: on D2
+FAIL D2 transmit: on D1
+```
+
+The radio channel is skipped, since the hardware drives it. Build
+without the option again before measuring: the check adds three regions
+per channel to the report.
+
 ## nRF54LM20 DK
 
 Put the PPK2 across the kit's current-measurement header, as for
