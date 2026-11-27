@@ -70,5 +70,5 @@ On the capture of `samples/profiling`, they print the
 
 - [Commands](commands.md): the report, the figure and the budgets.
 - ppk2-lib's
-  [command reference](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/command.md):
+  [command reference](https://rdagher.github.io/ppk2-lib/user/command/):
   `list`, `capture`, `run` and `power` in detail.

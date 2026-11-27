@@ -5,7 +5,7 @@ region, and check it against a budget.
 
 | Command | What it does |
 |---|---|
-| `list`, `capture`, `run`, `power` | Passed on to the [commands of ppk2-lib](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/command.md), which takes the capture itself |
+| `list`, `capture`, `run`, `power` | Passed on to the [commands of ppk2-lib](https://rdagher.github.io/ppk2-lib/user/command/), which takes the capture itself |
 | `attribute` | Prints the [report](#report) |
 | `plot` | Draws the [figure](#figure) |
 | `budget` | Exits 1 when a [budget](#budget-check) is exceeded |
@@ -165,5 +165,5 @@ For the same reason:
 - [Using the module without west](without-west.md)
 - [Limitations](limitations.md)
 - ppk2-lib's
-  [command reference](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/command.md):
+  [command reference](https://rdagher.github.io/ppk2-lib/user/command/):
   `list`, `capture`, `run` and `power` in detail.

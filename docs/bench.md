@@ -50,7 +50,7 @@ Nordic's
 Everything else on the board stays connected.
 
 See ppk2-lib's
-[getting started](https://github.com/rdagher/ppk2-lib/blob/main/docs/user/getting-started.md#wiring)
+[getting started](https://rdagher.github.io/ppk2-lib/user/getting-started/#step-2-wiring)
 page for both wirings, Ampere meter and Source meter.
 
 ## nRF54L15 DK

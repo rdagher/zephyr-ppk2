@@ -216,7 +216,7 @@ The check above fits that description and does not prove it. Either
 way the median is the figure to trust for an event that repeats.
 
 See ppk2-lib's
-[Principle page](https://github.com/rdagher/ppk2-lib/blob/main/docs/measure/principle.md#limit-waking-from-sleep)
+[Principle page](https://rdagher.github.io/ppk2-lib/measure/principle/#limit-waking-from-sleep)
 for one such wake-up, and what the spike filter does with it.
 
 ## Limitations
@@ -228,7 +228,7 @@ for one such wake-up, and what the spike filter does with it.
 - The comparison with the app covers two of the samples, on one day.
 
 ppk2-lib's
-[validation results](https://github.com/rdagher/ppk2-lib/blob/main/docs/validation/results.md)
+[validation results](https://rdagher.github.io/ppk2-lib/validation/results/)
 show that it agrees with the app on a known signal.
 
 ## See also
